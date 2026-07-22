@@ -1,0 +1,12 @@
+{
+  "name": "agua-potable-san-antonio",
+  "version": "1.0.0",
+  "description": "AGUA POTABLE SAN ANTONIO - Sistema de gestión de agua potable (root folder)",
+  "scripts": {
+    "dev": "cd app-unpacked && npm install && npm start",
+    "build": "cd app-unpacked && npm install && npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

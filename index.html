@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGUA POTABLE SAN ANTONIO — Sistema Integral</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0ea5e9">
+<meta name="description" content="Sistema de gestión de agua potable para administración de usuarios y cobros">
+<style>
+/* ============================================================
+   VARIABLES & RESET
+============================================================ */
+:root {
+    --brand:       #0ea5e9;
+    --brand-dark:  #0369a1;
+    --brand-dim:   #e0f2fe;
+    --sidebar-bg:  #0f172a;
+    --sidebar-sec: #1e293b;
+    --sidebar-act: #0ea5e9;
+    --surface:     #ffffff;
+    --bg:          #f1f5f9;
+    --bg2:         #e2e8f0;
+    --border:      #e2e8f0;
+    --text:        #0f172a;
+    --text2:       #475569;
+    --text3:       #94a3b8;
+    --ok:          #10b981;
+    --ok-bg:       #d1fae5;
+    --ok-text:     #065f46;
+    --err:         #ef4444;
+    --err-bg:      #fee2e2;
+    --err-text:    #991b1b;
+    --warn:        #f59e0b;
+    --warn-bg:     #fef3c7;
+    --warn-text:   #92400e;
+    --r:           8px;
+    --r2:          12px;
+    --sh:          0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+    --sh2:         0 4px 12px rgba(0,0,0,.08);
+    --sh3:         0 10px 30px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;display:flex;height:100vh;overflow:hidden}
+.hidden{display:none!important}
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+.sidebar{width:248px;min-width:248px;background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:20}
+
+.sb-brand{padding:20px 18px;background:linear-gradient(160deg,#1e3a5f,#0f172a);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px}
+.sb-brand-ico{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#38bdf8);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 4px 12px rgba(14,165,233,.4)}
+.sb-brand-name{color:#fff;font-size:15px;font-weight:700;letter-spacing:.2px}
+.sb-brand-sub{color:rgba(255,255,255,.35);font-size:11px;margin-top:1px}
+
+.sb-menu{flex:1;padding:10px 8px;overflow-y:auto}
+.sb-sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.25);padding:14px 10px 5px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);cursor:pointer;font-size:13.5px;color:rgba(255,255,255,.55);transition:all .15s;user-select:none;margin-bottom:2px}
+.sb-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9)}
+.sb-item.active{background:var(--brand);color:#fff;box-shadow:0 2px 10px rgba(14,165,233,.4)}
+.sb-item-ico{width:16px;text-align:center;font-size:14px;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--err);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;min-width:20px;text-align:center}
+.sb-badge.gray{background:#475569}
+
+.sb-foot{padding:14px 16px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0}
+.sb-uname{color:#fff;font-size:13px;font-weight:600}
+.sb-utime{color:rgba(255,255,255,.35);font-size:11px;margin-top:1px}
+
+/* ============================================================
+   MAIN
+============================================================ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;box-shadow:var(--sh);flex-shrink:0;z-index:5}
+.topbar-left .pg-title{font-size:16px;font-weight:700;color:var(--text)}
+.topbar-left .pg-crumb{font-size:11px;color:var(--text3);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:18px}
+.topbar-clock{text-align:right}
+.topbar-clock .tc-date{font-size:12px;font-weight:600;color:var(--text2)}
+.topbar-clock .tc-time{font-size:11px;color:var(--text3)}
+
+.content{flex:1;padding:24px 28px;overflow-y:auto}
+
+/* ============================================================
+   CARDS
+============================================================ */
+.card{background:var(--surface);border-radius:var(--r2);border:1px solid var(--border);box-shadow:var(--sh);padding:20px;margin-bottom:18px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.card-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+
+/* ============================================================
+   STAT CARDS
+============================================================ */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.sc.blue::after{background:linear-gradient(90deg,var(--brand),#38bdf8)}
+.sc.green::after{background:linear-gradient(90deg,var(--ok),#34d399)}
+.sc.red::after{background:linear-gradient(90deg,var(--err),#f87171)}
+.sc.amber::after{background:linear-gradient(90deg,var(--warn),#fbbf24)}
+.sc-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:12px}
+.sc.blue .sc-ico{background:#e0f2fe;color:var(--brand-dark)}
+.sc.green .sc-ico{background:var(--ok-bg);color:var(--ok-text)}
+.sc.red .sc-ico{background:var(--err-bg);color:var(--err-text)}
+.sc.amber .sc-ico{background:var(--warn-bg);color:var(--warn-text)}
+.sc-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3)}
+.sc-num{font-size:28px;font-weight:800;color:var(--text);line-height:1;margin:4px 0}
+.sc-sub{font-size:11px;color:var(--text3)}
+
+/* ============================================================
+   TABLA
+============================================================ */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{padding:9px 14px;background:var(--bg);color:var(--text3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--bg)}
+
+/* ============================================================
+   BADGES
+============================================================ */
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.b-ok{background:var(--ok-bg);color:var(--ok-text)}
+.b-err{background:var(--err-bg);color:var(--err-text)}
+.b-warn{background:var(--warn-bg);color:var(--warn-text)}
+.b-blue{background:var(--brand-dim);color:var(--brand-dark)}
+.b-gray{background:var(--bg2);color:var(--text2)}
+.b-moroso{background:#7f1d1d;color:#fef2f2;font-weight:700;letter-spacing:.3px}
+.b-debe{background:#fef3c7;color:#78350f;border:1px solid #fcd34d}
+
+/* ============================================================
+   BOTONES
+============================================================ */
+.btn{padding:8px 16px;border:none;border-radius:var(--r);cursor:pointer;font-weight:600;font-size:13px;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;text-decoration:none;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark);box-shadow:0 3px 10px rgba(14,165,233,.35)}
+.btn-success{background:var(--ok);color:#fff}
+.btn-success:hover{background:#059669;box-shadow:0 3px 10px rgba(16,185,129,.3)}
+.btn-danger{background:var(--err);color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-warn{background:var(--warn);color:#fff}
+.btn-warn:hover{background:#d97706}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg2);color:var(--text)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-lg{padding:13px 24px;font-size:15px}
+.btn-block{width:100%;justify-content:center}
+
+/* ============================================================
+   FORMULARIOS
+============================================================ */
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);margin-bottom:5px}
+.fc{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r);width:100%;font-size:14px;color:var(--text);background:var(--surface);transition:all .15s;font-family:inherit}
+.fc:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(14,165,233,.15)}
+.fc::placeholder{color:var(--text3)}
+.frow{display:flex;gap:12px}
+.frow .fg{flex:1}
+.fhint{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* ============================================================
+   MODAL
+============================================================ */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;justify-content:center;align-items:center;z-index:1000;backdrop-filter:blur(4px)}
+.mc{background:var(--surface);border-radius:var(--r2);width:580px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:var(--sh3);animation:mIn .2s ease}
+.mh{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:1}
+.mt{font-size:15px;font-weight:700;color:var(--text)}
+.mx{width:28px;height:28px;border:none;background:var(--bg2);border-radius:6px;cursor:pointer;font-size:15px;color:var(--text2);display:flex;align-items:center;justify-content:center;transition:.15s}
+.mx:hover{background:var(--err-bg);color:var(--err)}
+.mb{padding:18px 22px}
+.mf{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+@keyframes mIn{from{opacity:0;transform:scale(.95) translateY(-12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* ============================================================
+   TOAST
+============================================================ */
+#toast-wrap{position:fixed;bottom:22px;right:22px;z-index:2000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:11px 18px;border-radius:var(--r);box-shadow:var(--sh3);display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;animation:tIn .3s ease;max-width:340px}
+.t-ok{background:#064e3b;color:#fff}
+.t-err{background:#7f1d1d;color:#fff}
+.t-info{background:#1e293b;color:#fff}
+@keyframes tIn{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes tOut{from{transform:translateY(0);opacity:1}to{transform:translateY(16px);opacity:0}}
+
+/* ============================================================
+   LOGIN
+============================================================ */
+#login-screen{position:fixed;inset:0;background:radial-gradient(ellipse at 60% 40%,#1e3a5f,#0f172a);z-index:3000;display:flex;align-items:center;justify-content:center}
+.login-box{background:var(--surface);border-radius:18px;padding:44px 40px;width:390px;box-shadow:0 30px 60px rgba(0,0,0,.5);text-align:center}
+.login-ico{width:68px;height:68px;border-radius:18px;background:linear-gradient(135deg,var(--brand),#38bdf8);display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 20px;box-shadow:0 8px 24px rgba(14,165,233,.35)}
+.login-title{font-size:24px;font-weight:800;color:var(--text)}
+.login-sub{color:var(--text3);font-size:13px;margin-top:5px;margin-bottom:28px}
+.login-err{background:var(--err-bg);color:var(--err-text);padding:9px 14px;border-radius:var(--r);font-size:12.5px;margin-bottom:14px;display:none;border:1px solid #fca5a5}
+
+/* ============================================================
+   COBROS — buscador con sugerencias
+============================================================ */
+.cobro-layout{display:grid;grid-template-columns:1fr 310px;gap:16px;align-items:start}
+.search-wrap{position:relative}
+.suggestions{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--brand);border-radius:var(--r);box-shadow:var(--sh3);z-index:100;max-height:240px;overflow-y:auto}
+.sug-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:.12s;font-size:13px}
+.sug-item:last-child{border-bottom:none}
+.sug-item:hover,.sug-item.selected{background:var(--brand-dim)}
+.sug-name{font-weight:600;color:var(--text)}
+.sug-detail{font-size:11px;color:var(--text3);margin-top:2px}
+
+.client-banner{background:linear-gradient(135deg,#0369a1,#0ea5e9);color:#fff;padding:18px 20px;border-radius:var(--r2);margin-bottom:16px}
+.client-banner h2{font-size:17px;margin-bottom:3px;font-weight:700}
+.client-banner p{font-size:12.5px;opacity:.8}
+
+.hist-item{padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.hist-item:last-child{border-bottom:none}
+.hist-amt{font-weight:700;color:var(--ok)}
+.hist-date{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ============================================================
+   DEUDORES
+============================================================ */
+.debt-banner{background:linear-gradient(135deg,#b91c1c,#ef4444);color:#fff;padding:18px 22px;border-radius:var(--r2);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.debt-banner .big{font-size:28px;font-weight:800}
+.debt-banner .label{font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+
+/* ============================================================
+   CONFIG
+============================================================ */
+.cfg-block{border:1px solid var(--border);border-radius:var(--r2);padding:20px;margin-bottom:14px}
+.cfg-block h4{font-size:13.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:7px;color:var(--text)}
+.cfg-danger{border-color:#fca5a5;background:#fff8f8}
+.cfg-danger h4{color:var(--err)}
+
+/* ============================================================
+   QUICK ACTIONS
+============================================================ */
+.qa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.qa{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r2);padding:16px 12px;text-align:center;cursor:pointer;transition:all .2s}
+.qa:hover{background:var(--brand-dim);border-color:var(--brand);transform:translateY(-2px);box-shadow:var(--sh2)}
+.qa-ico{font-size:22px;margin-bottom:7px}
+.qa-lbl{font-size:12px;font-weight:700;color:var(--text2)}
+
+/* ============================================================
+   MISC
+============================================================ */
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.toolbar .search-wrap{flex:1;min-width:180px}
+.empty{text-align:center;padding:44px 20px;color:var(--text3)}
+.empty-ico{font-size:38px;opacity:.3;margin-bottom:10px}
+.empty p{font-size:13px}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* ============================================================
+   PRINT
+============================================================ */
+#print-area{display:none}
+@media print{
+    body *{visibility:hidden!important}
+    #print-area,#print-area *{visibility:visible!important}
+    #print-area{display:block!important;position:fixed;left:0;top:0;width:100%}
+    .boleta{font-family:Arial,sans-serif;max-width:760px;margin:0 auto;padding:26px;border:2px solid #222}
+    .b-hdr{display:flex;justify-content:space-between;border-bottom:2px solid #222;padding-bottom:14px;margin-bottom:18px}
+    .b-logo{height:48px;margin-bottom:6px}
+    .b-hdr h1{font-size:17px;margin-bottom:3px}
+    .b-hdr .b-right{text-align:right}
+    .b-hdr .b-right h2{font-size:14px}
+    .b-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px}
+    .b-total{font-size:17px;font-weight:bold;border-top:2px solid #222;padding-top:10px;margin-top:10px}
+    .b-foot{text-align:center;font-size:11px;margin-top:32px;border-top:1px dashed #aaa;padding-top:10px;color:#555}
+    .pg-break{page-break-after:always}
+    .corte{border:2px dashed #b91c1c;padding:26px;max-width:760px;margin:0 auto;font-family:Arial,sans-serif}
+    .corte h1{text-align:center;color:#b91c1c;font-size:20px;margin-bottom:16px}
+    .c-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+    .c-firma{border-top:1px solid #222;width:190px;text-align:center;padding-top:5px;font-size:11px;margin-top:44px}
+    .aviso{border:2px dashed #b45309;padding:26px;max-width:760px;margin:0 auto;font-family:Arial,sans-serif}
+    .aviso h1{text-align:center;color:#b45309;font-size:20px;margin-bottom:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOASTS -->
+<div id="toast-wrap"></div>
+
+<!-- ============================================================
+     LOGIN
+============================================================ -->
+<div id="login-screen">
+    <div class="login-box">
+        <div class="login-ico">💧</div>
+        <div class="login-title">AGUA POTABLE SAN ANTONIO</div>
+        <div class="login-sub">Sistema de Gestión de Agua Potable</div>
+        <div id="login-err" class="login-err">Contraseña incorrecta. Intente nuevamente.</div>
+        <div class="fg" style="margin-bottom:8px">
+            <input type="text" id="login-user" class="fc"
+                   placeholder="Usuario..."
+                   style="text-align:center;font-size:16px"
+                   onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <div class="fg">
+            <input type="password" id="login-pass" class="fc"
+                   placeholder="Contraseña..."
+                   style="text-align:center;font-size:16px;letter-spacing:4px"
+                   onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="login()">Ingresar al Sistema</button>
+    </div>
+</div>
+
+<!-- ============================================================
+     SIDEBAR
+============================================================ -->
+<div class="sidebar">
+    <div class="sb-brand">
+        <div class="sb-brand-ico">💧</div>
+        <div>
+            <div class="sb-brand-name">AGUA POTABLE SAN ANTONIO</div>
+            <div class="sb-brand-sub">Enterprise v6.0</div>
+        </div>
+    </div>
+    <div class="sb-menu">
+        <div class="sb-sec">Principal</div>
+        <div class="sb-item active" data-view="dashboard" onclick="nav(this,'dashboard')">
+            <span class="sb-item-ico">📊</span>Panel Principal
+        </div>
+        <div class="sb-item" data-view="usuarios" onclick="nav(this,'usuarios')">
+            <span class="sb-item-ico">👥</span>Padrón de Usuarios
+        </div>
+        <div class="sb-sec">Operaciones</div>
+        <div class="sb-item" data-view="cobros" onclick="nav(this,'cobros')">
+            <span class="sb-item-ico">💰</span>Caja y Facturación
+        </div>
+        <div class="sb-item" data-view="deudores" onclick="nav(this,'deudores')">
+            <span class="sb-item-ico">⚠️</span>Morosos y Cortes
+            <span class="sb-badge" id="badge-deudores">0</span>
+        </div>
+        <div class="sb-sec">Sistema</div>
+        <div class="sb-item" data-view="papelera" onclick="nav(this,'papelera')">
+            <span class="sb-item-ico">🗑️</span>Papelera
+            <span class="sb-badge gray" id="badge-trash">0</span>
+        </div>
+        <div class="sb-item" data-view="config" onclick="nav(this,'config')">
+            <span class="sb-item-ico">⚙️</span>Configuración
+        </div>
+    </div>
+    <div class="sb-foot">
+        <div class="sb-avatar">A</div>
+        <div>
+            <div class="sb-uname">Administrador</div>
+            <div class="sb-utime" id="sb-time">—</div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     MAIN
+============================================================ -->
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="pg-title" id="pg-title">Panel Principal</div>
+            <div class="pg-crumb" id="pg-crumb">Inicio / Panel Principal</div>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-clock">
+                <div class="tc-date" id="tc-date">—</div>
+                <div class="tc-time" id="tc-time">—</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- ====================================================
+             DASHBOARD
+        ==================================================== -->
+        <div id="view-dashboard" class="view">
+            <div class="stats-grid">
+                <div class="sc blue">
+                    <div class="sc-ico">👥</div>
+                    <div class="sc-label">Usuarios Activos</div>
+                    <div class="sc-num" id="d-users">0</div>
+                    <div class="sc-sub">Padrón registrado</div>
+                </div>
+                <div class="sc green">
+                    <div class="sc-ico">💰</div>
+                    <div class="sc-label">Recaudación Total</div>
+                    <div class="sc-num" id="d-total">$0</div>
+                    <div class="sc-sub" id="d-npagos">0 pagos registrados</div>
+                </div>
+                <div class="sc red">
+                    <div class="sc-ico">⚠️</div>
+                    <div class="sc-label">Usuarios con Deuda</div>
+                    <div class="sc-num" id="d-deudores">0</div>
+                    <div class="sc-sub" id="d-deuda-tot">Deuda total: $0</div>
+                </div>
+                <div class="sc amber">
+                    <div class="sc-ico">📋</div>
+                    <div class="sc-label">Pagos Hoy</div>
+                    <div class="sc-num" id="d-hoy">0</div>
+                    <div class="sc-sub" id="d-hoy-monto">$0 recaudado hoy</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-hd"><span class="card-title">⚡ Accesos Rápidos</span></div>
+                <div class="qa-grid">
+                    <div class="qa" onclick="navById('usuarios');setTimeout(openUserModal,80)">
+                        <div class="qa-ico">➕</div><div class="qa-lbl">Nuevo Usuario</div>
+                    </div>
+                    <div class="qa" onclick="navById('cobros')">
+                        <div class="qa-ico">💳</div><div class="qa-lbl">Registrar Pago</div>
+                    </div>
+                    <div class="qa" onclick="navById('deudores')">
+                        <div class="qa-ico">📋</div><div class="qa-lbl">Ver Morosos</div>
+                    </div>
+                    <div class="qa" onclick="doBackup()">
+                        <div class="qa-ico">💾</div><div class="qa-lbl">Copia de Seguridad</div>
+                    </div>
+                    <div class="qa" onclick="doExport()">
+                        <div class="qa-ico">📊</div><div class="qa-lbl">Exportar CSV</div>
+                    </div>
+                    <div class="qa" onclick="navById('config')">
+                        <div class="qa-ico">⚙️</div><div class="qa-lbl">Configuración</div>
+                    </div>
+                    <div class="qa" onclick="abrirModalCargo()" style="border-color:#ef4444;background:#fff5f5">
+                        <div class="qa-ico">📅</div><div class="qa-lbl" style="color:#991b1b">Generar Cargo Mensual</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-hd"><span class="card-title">📜 Últimos Pagos</span></div>
+                <div class="toolbar" style="gap:8px;display:flex;align-items:center;flex-wrap:wrap">
+                    <input id="recent-q" class="fc" style="max-width:220px" placeholder="Buscar por nombre..." oninput="renderRecent()">
+                    <input type="date" id="recent-d1" class="fc" onchange="renderRecent()">
+                    <span style="opacity:.6">a</span>
+                    <input type="date" id="recent-d2" class="fc" onchange="renderRecent()">
+                    <button class="btn btn-ghost btn-sm" onclick="clearRecentSearch()">Limpiar</button>
+                </div>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>Fecha</th><th>Recibo</th><th>Cliente</th><th>Concepto</th><th>Monto</th></tr></thead>
+                        <tbody id="d-recent"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-hd"><span class="card-title">📆 Recaudación Mensual</span></div>
+                <div class="toolbar" style="gap:8px;display:flex;align-items:center;flex-wrap:wrap">
+                    <select id="rm-mes" class="fc" style="max-width:160px" onchange="renderRecaudacionMes()"></select>
+                    <select id="rm-ano" class="fc" style="max-width:120px" onchange="renderRecaudacionMes()"></select>
+                    <button class="btn btn-primary" onclick="imprimirRecaudacionMes()">🖨️ Imprimir</button>
+                </div>
+                <div id="rm-resumen" style="font-size:13px;color:var(--text2);margin:8px 0">—</div>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>Fecha</th><th>Recibo</th><th>Cliente</th><th>Concepto</th><th>Monto</th></tr></thead>
+                        <tbody id="rm-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+            <div class="card">
+                <div class="card-hd"><span class="card-title">📈 Recaudación Anual</span></div>
+                <div class="toolbar" style="gap:8px;display:flex;align-items:center;flex-wrap:wrap">
+                    <select id="ra-ano" class="fc" style="max-width:140px" onchange="renderRecaudacionAnual()"></select>
+                    <button class="btn btn-primary" onclick="imprimirRecaudacionAnual()">🖨️ Imprimir</button>
+                </div>
+                <div id="ra-resumen" style="font-size:13px;color:var(--text2);margin:8px 0">—</div>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>Mes</th><th>Pagos</th><th>Total</th></tr></thead>
+                        <tbody id="ra-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+
+        <!-- ====================================================
+             USUARIOS
+        ==================================================== -->
+        <div id="view-usuarios" class="view hidden">
+            <div class="card">
+                <div class="toolbar">
+                    <div class="search-wrap" style="flex:2">
+                        <input type="text" id="usr-search" class="fc"
+                               placeholder="Buscar por DNI, Nombre, Apellido, Barrio..."
+                               oninput="handleUserSearch()">
+                    </div>
+                    <select id="usr-barrio" class="fc" onchange="renderUsers()" style="max-width:175px">
+                        <option value="">Todos los Barrios</option>
+                    </select>
+                    <select id="usr-estado" class="fc" onchange="renderUsers()" style="max-width:160px">
+                        <option value="">Todos</option>
+                        <option value="aldia">✅ Al día</option>
+                        <option value="debe">🟡 Debe (1 mes)</option>
+                        <option value="moroso">🔴 MOROSO (2+ meses)</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="openUserModal()">+ Nuevo</button>
+                    <button class="btn btn-ghost" onclick="doExport()">📊 CSV</button>
+                </div>
+                <div id="usr-count" style="font-size:12px;color:var(--text3);margin-bottom:10px"></div>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>DNI</th><th>Nombre y Apellido</th><th>Ubicación</th>
+                                <th>Teléfono</th><th>Categoría</th><th>Estado</th><th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl-users"></tbody>
+                    </table>
+                </div>
+                <!-- Pagination Controls -->
+                <div id="usr-pagination" style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+                    <div>
+                        <label style="margin-right:8px">Mostrar:</label>
+                        <select id="usr-per-page" class="fc" style="width:80px" onchange="changePerPage()">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button class="btn btn-ghost btn-sm" id="usr-prev" onclick="prevPage()">◀ Anterior</button>
+                        <span id="usr-page-info" style="margin:0 12px;font-weight:600"></span>
+                        <button class="btn btn-ghost btn-sm" id="usr-next" onclick="nextPage()">Siguiente ▶</button>
+                    </div>
+                </div>
+                <div id="usr-empty" class="empty hidden">
+                    <div class="empty-ico">👤</div><p>Sin resultados para esa búsqueda.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================
+             COBROS
+        ==================================================== -->
+        <div id="view-cobros" class="view hidden">
+            <div class="cobro-layout">
+                <!-- Columna izquierda -->
+                <div>
+                    <div class="card">
+                        <div class="card-hd">
+                            <span class="card-title">🔍 Buscar Cliente</span>
+                            <span style="font-size:11px;color:var(--text3)">Por DNI, nombre o apellido</span>
+                        </div>
+                        <div class="search-wrap">
+                            <input type="text" id="cobro-input" class="fc"
+                                   placeholder="Escriba DNI, nombre o apellido..."
+                                   oninput="cobrosSearch()"
+                                   onkeydown="cobrosKey(event)"
+                                   autocomplete="off">
+                            <div id="cobro-sugs" class="suggestions hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de cobro (oculto hasta seleccionar) -->
+                    <div id="cobro-form" class="card hidden">
+                        <div class="client-banner">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                                <div>
+                                    <div style="font-size:10px;opacity:.65;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Cliente seleccionado</div>
+                                    <h2 id="cf-nombre">—</h2>
+                                    <p id="cf-detalle">—</p>
+                                </div>
+                                <div style="text-align:right">
+                                    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                                        <select id="cf-cat-select" onchange="updateClientCategory(this)" style="background:rgba(255,255,255,.95);color:#0f172a;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.3);font-size:12px;font-weight:600;max-width:250px"></select>
+                                        <span id="cf-cat-display" style="background:rgba(255,255,255,.2);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;display:none">—</span>
+                                    </div>
+                                    <div id="cf-deuda" style="font-size:12px;opacity:.8;margin-top:8px"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="frow">
+                            <div class="fg">
+                                <label class="fl">Mes a Pagar</label>
+                                <select id="cf-mes" class="fc"></select>
+                            </div>
+                            <div class="fg">
+                                <label class="fl">Monto ($)</label>
+                                <input type="number" id="cf-monto" class="fc" min="0">
+                            </div>
+                        </div>
+                        <div class="fg">
+                            <label class="fl">Observaciones (opcional)</label>
+                            <input type="text" id="cf-obs" class="fc" placeholder="Ej: pago parcial, descuento...">
+                        </div>
+                        <button class="btn btn-success btn-block btn-lg" style="margin-top:6px" onclick="procesarPago()">
+                            🖨️ CONFIRMAR PAGO Y GENERAR RECIBO
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Columna historial -->
+                <div>
+                    <div class="card" style="height:100%">
+                <div class="card-hd">
+                    <span class="card-title">📜 Historial del Cliente</span>
+                    <button class="btn btn-primary btn-sm" id="btn-historial-completo" onclick="openFullHistory()" style="display:none">
+                        📋 Ver Historial Completo
+                    </button>
+                </div>
+                <div id="cobro-hist">
+                            <div class="empty">
+                                <div class="empty-ico">💳</div>
+                                <p>Seleccione un cliente para ver su historial.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================
+             DEUDORES
+        ==================================================== -->
+        <div id="view-deudores" class="view hidden">
+            <!-- Doble banner: morosos + con deuda 1 mes -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+                <div class="debt-banner">
+                    <div>
+                        <div class="label">MOROSOS (2+ meses)</div>
+                        <div class="big" id="deu-morosos-monto">$0</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="big" id="deu-morosos-count">0</div>
+                        <div class="label">con corte posible</div>
+                    </div>
+                </div>
+                <div class="debt-banner" style="background:linear-gradient(135deg,#b45309,#f59e0b)">
+                    <div>
+                        <div class="label">CON AVISO (1 mes)</div>
+                        <div class="big" id="deu-aviso-monto">$0</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="big" id="deu-aviso-count">0</div>
+                        <div class="label">deben 1 mes</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="toolbar">
+                    <div class="search-wrap" style="flex:1">
+                        <input type="text" id="deu-search" class="fc" placeholder="Buscar moroso..." oninput="renderDeudores()">
+                    </div>
+                    <select id="deu-barrio" class="fc" onchange="renderDeudores()" style="max-width:170px">
+                        <option value="">Todos los Barrios</option>
+                    </select>
+                    <select id="deu-filtro-estado" class="fc" onchange="renderDeudores()" style="max-width:180px">
+                        <option value="moroso">🔴 Solo MOROSOS (2+ mes)</option>
+                        <option value="todos">Todos con deuda</option>
+                    </select>
+                    <button class="btn btn-warn" onclick="imprimirAvisos()">🖨️ Boletas de Notificación</button>
+                    <button class="btn btn-warn" onclick="imprimirAvisosMorosos()">🖨️ Notificación a Morosos</button>
+                    <button class="btn btn-danger" onclick="imprimirCortes()">🖨️ Boletas de Corte</button>
+                </div>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>Sel</th><th>Cliente</th><th>DNI</th><th>Barrio</th><th>Meses adeudados</th><th>Deuda $</th><th>Estado</th><th>Acciones</th></tr></thead>
+                        <tbody id="tbl-deudores"></tbody>
+                    </table>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;align-items:center">
+                    <div id="sel-count" style="font-size:12px;color:var(--text2)">Seleccionados: 0</div>
+                    <button class="btn btn-ghost btn-sm" onclick="clearSel()">Limpiar selección</button>
+                </div>
+                <div id="deu-empty" class="empty hidden">
+                    <div class="empty-ico">🎉</div><p>No hay usuarios en este filtro.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================
+             PAPELERA
+        ==================================================== -->
+        <div id="view-papelera" class="view hidden">
+            <div class="card">
+                <div class="card-hd">
+                    <span class="card-title">🗑️ Papelera de Reciclaje</span>
+                    <button class="btn btn-danger btn-sm" onclick="vaciarPapelera()">Vaciar todo</button>
+                </div>
+                <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Usuarios eliminados. Puede restaurarlos o eliminarlos definitivamente.</p>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>Nombre</th><th>DNI</th><th>Barrio</th><th>Eliminado</th><th>Acciones</th></tr></thead>
+                        <tbody id="tbl-trash"></tbody>
+                    </table>
+                </div>
+                <div id="trash-empty" class="empty hidden">
+                    <div class="empty-ico">✨</div><p>La papelera está vacía.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================
+             CONFIGURACIÓN
+        ==================================================== -->
+        <div id="view-config" class="view hidden">
+            <div class="cfg-block">
+                <h4>🏢 Datos de la Empresa</h4>
+                <div class="frow">
+                    <div class="fg">
+                        <label class="fl">Nombre / Cooperativa</label>
+                        <input type="text" id="cfg-empresa" class="fc" placeholder="Ej: Cooperativa de Agua del Norte">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Teléfono</label>
+                        <input type="text" id="cfg-tel" class="fc" placeholder="Ej: 3755-123456">
+                    </div>
+                </div>
+                <div class="frow">
+                    <div class="fg">
+                        <label class="fl">Dirección</label>
+                        <input type="text" id="cfg-dir" class="fc" placeholder="Ej: Av. Principal 123">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Tarifa Base Mensual ($)</label>
+                        <input type="number" id="cfg-precio" class="fc" min="0">
+                    </div>
+                </div>
+                <div class="frow">
+                    <div class="fg">
+                        <label class="fl">CUIT</label>
+                        <input type="text" id="cfg-cuit" class="fc" placeholder="Ej: 20-12345678-3">
+                    </div>
+                </div>
+                <div class="frow">
+                    <div class="fg">
+                        <label class="fl">Prefijo de Recibo</label>
+                        <input type="text" id="cfg-prefijo" class="fc" placeholder="Ej: 0001">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Próximo N°</label>
+                        <input type="number" id="cfg-next" class="fc" min="1">
+                    </div>
+                </div>
+                <div class="frow">
+                    <div class="fg">
+                        <label class="fl">Logo</label>
+                        <input type="file" id="cfg-logo" class="fc" accept="image/*" onchange="cfgLogoChange(this)">
+                        <div class="fhint">PNG o JPG. Se mostrará en el recibo.</div>
+                    </div>
+                    <div class="fg">
+                        <img id="cfg-logo-preview" style="max-height:60px;display:none;border:1px solid var(--border);padding:4px;border-radius:6px">
+                        <button class="btn btn-ghost" style="margin-top:6px" onclick="cfgLogoRemove()">Quitar Logo</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveConfig()">💾 Guardar Configuración</button>
+            </div>
+
+            <div class="cfg-block">
+                <h4>📅 Generación de Cargos Mensuales</h4>
+                <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+                    Cada mes haga clic en este botón para sumar la tarifa a la deuda de todos los usuarios.
+                    El sistema <strong>registra qué meses ya fueron cobrados</strong> para no duplicar cargos.
+                    Un usuario con <strong>2 o más meses</strong> impagos pasa automáticamente a <span style="color:var(--err);font-weight:700">MOROSO</span>.
+                </p>
+                <div id="cargos-historial" style="background:var(--bg);border-radius:var(--r);padding:12px;font-size:12px;color:var(--text2);margin-bottom:14px;max-height:120px;overflow-y:auto">
+                    Sin cargos generados aún.
+                </div>
+                <button class="btn btn-danger" onclick="abrirModalCargo()">📅 Generar Cargo del Mes Actual</button>
+            </div>
+
+            <div class="cfg-block">
+                <h4>💾 Respaldo de Datos</h4>
+                <div class="frow">
+                    <div class="fg">
+                        <button class="btn btn-primary btn-block" onclick="doBackup()">💾 Exportar Copia (.json)</button>
+                        <div class="fhint">Descarga todos los datos del sistema.</div>
+                    </div>
+                    <div class="fg">
+                        <button class="btn btn-warn btn-block" onclick="document.getElementById('file-inp').click()">📂 Restaurar Copia (.json)</button>
+                        <input type="file" id="file-inp" style="display:none" accept=".json" onchange="doRestore(this)">
+                        <div class="fhint">Carga un respaldo generado anteriormente.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cfg-block">
+                <h4>� Administradores</h4>
+                <div id="admin-list" style="margin-bottom:10px;font-size:13px;color:var(--text2)">—</div>
+                <div class="frow" style="max-width:520px">
+                    <div class="fg">
+                        <label class="fl">Nuevo Usuario</label>
+                        <input type="text" id="adm-user" class="fc" placeholder="usuario...">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Contraseña</label>
+                        <input type="password" id="adm-pass" class="fc" placeholder="contraseña...">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addAdmin()">➕ Agregar Administrador</button>
+                <div class="frow" style="max-width:400px;margin-top:14px">
+                    <div class="fg">
+                        <label class="fl">Nueva Contraseña (mi usuario)</label>
+                        <input type="password" id="cfg-pass1" class="fc" placeholder="Nueva contraseña...">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Confirmar</label>
+                        <input type="password" id="cfg-pass2" class="fc" placeholder="Repita...">
+                    </div>
+                </div>
+                <button class="btn btn-ghost" onclick="changePass()">Cambiar mi contraseña</button>
+            </div>
+
+            <div class="cfg-block">
+                <h4>📦 Gestión de Categorías</h4>
+                <div id="category-list" style="margin-bottom:14px;max-height:300px;overflow-y:auto"></div>
+                <button class="btn btn-primary" onclick="openCategoryModal()">➕ Agregar Categoría</button>
+            </div>
+
+            <div class="cfg-block cfg-danger">
+                <h4>⛔ Zona de Peligro</h4>
+                <p style="font-size:13px;color:var(--err);margin-bottom:14px">Elimina <strong>todos los datos</strong> de forma permanente e irreversible.</p>
+                <button class="btn btn-danger" onclick="resetSystem()">Formatear Sistema</button>
+            </div>
+        </div>
+
+    </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ============================================================
+     MODAL USUARIO
+============================================================ -->
+<div id="modal-user" class="modal hidden">
+    <div class="mc">
+        <div class="mh">
+            <span class="mt" id="modal-user-title">👤 Nuevo Usuario</span>
+            <button class="mx" onclick="closeModal('modal-user')">✕</button>
+        </div>
+        <div class="mb">
+            <input type="hidden" id="u-id">
+            <div class="frow">
+                <div class="fg"><label class="fl">Nombre *</label><input type="text" id="u-nombre" class="fc" placeholder="Nombre"></div>
+                <div class="fg"><label class="fl">Apellido *</label><input type="text" id="u-apellido" class="fc" placeholder="Apellido"></div>
+            </div>
+            <div class="frow">
+                <div class="fg"><label class="fl">DNI *</label><input type="number" id="u-dni" class="fc" placeholder="Número DNI"></div>
+                <div class="fg"><label class="fl">Teléfono</label><input type="text" id="u-tel" class="fc" placeholder="Ej: 3755-123456"></div>
+            </div>
+            <div class="frow">
+                <div class="fg">
+                    <label class="fl">Categoría</label>
+                    <select id="u-cat" class="fc">
+                        <option value="Categoría 1: Domiciliaria (tipo consumo familiar) con tanque hasta 1100 litros, hasta tanto se cuente con el servicio medido. $ 16.000,00">Categoría 1: Domiciliaria (tipo consumo familiar) con tanque hasta 1100 litros, hasta tanto se cuente con el servicio medido. $ 16.000,00</option>
+                        <option value="Categoría 2: Kioscos, Librerías, Farmacias, Ferreterías, Agropecuarias, Tiendas y Oficinas. $25.000,00">Categoría 2: Kioscos, Librerías, Farmacias, Ferreterías, Agropecuarias, Tiendas y Oficinas. $25.000,00</option>
+                        <option value="Categoría 3: Comercial y Domiciliaria (detallados en Cat. 2) y en caso de alquileres se agrega cada unidad como Cat. 1. $ 32.000,00">Categoría 3: Comercial y Domiciliaria (detallados en Cat. 2) y en caso de alquileres se agrega cada unidad como Cat. 1. $ 32.000,00</option>
+                        <option value="Categoría 4: Domiciliaria con Pileta de Natación, con recambio de agua y/o sistema de filtrado parcial de agua. (Puede optar por el Servicio Medido) $25.000,00">Categoría 4: Domiciliaria con Pileta de Natación, con recambio de agua y/o sistema de filtrado parcial de agua. (Puede optar por el Servicio Medido) $25.000,00</option>
+                        <option value="Categoría 5: Domiciliaria con Pileta tipo Pelopincho o similares.$ 25.000,00">Categoría 5: Domiciliaria con Pileta tipo Pelopincho o similares.$ 25.000,00</option>
+                        <option value="Categoría 6: Supermercados, Mercados, Estaciones de Servicios, Bares, Restaurantes, Restobares, Discos Pub, Talleres, Empresas de Transportes y Funerarias $ 22.000,00">Categoría 6: Supermercados, Mercados, Estaciones de Servicios, Bares, Restaurantes, Restobares, Discos Pub, Talleres, Empresas de Transportes y Funerarias $ 22.000,00</option>
+                        <option value="Categoría 7: Hoteles, Hospedajes y Cabañas $ 32.000,00">Categoría 7: Hoteles, Hospedajes y Cabañas $ 32.000,00</option>
+                        <option value="Categoría 8: Lavaderos de Vehículos y Viveros $ 40.000,00">Categoría 8: Lavaderos de Vehículos y Viveros $ 40.000,00</option>
+                        <option value="Categoría 9: Pensionados discapacitados con presentación de CUD (certificado único de discapacidad), jubilados con la mínima que presente comprobante Bancario.- $ 13.000,00">Categoría 9: Pensionados discapacitados con presentación de CUD (certificado único de discapacidad), jubilados con la mínima que presente comprobante Bancario.- $ 13.000,00</option>
+                        <option value="Categoría 10: Mantenimiento del servicio sin uso o consumo $ 10.000,00">Categoría 10: Mantenimiento del servicio sin uso o consumo $ 10.000,00</option>
+                        <option value="Derecho de Conexión $ 50.000,00">Derecho de Conexión $ 50.000,00</option>
+                        <option value="Opción Servicio Medido por cada 10 m3. $ 15.000,00">Opción Servicio Medido por cada 10 m3. $ 15.000,00</option>
+                    </select>
+                </div>
+                <div class="fg"><label class="fl">Barrio *</label><input type="text" id="u-barrio" class="fc" placeholder="Nombre del barrio"></div>
+            </div>
+            <div class="frow">
+                <div class="fg"><label class="fl">Manzana</label><input type="text" id="u-mz" class="fc" placeholder="Ej: 5"></div>
+                <div class="fg"><label class="fl">Lote</label><input type="text" id="u-lote" class="fc" placeholder="Ej: 12"></div>
+            </div>
+            <div class="fg">
+                <label class="fl">Deuda Inicial ($)</label>
+                <input type="number" id="u-deuda" class="fc" value="0" min="0">
+                <div class="fhint">Si el usuario ya tiene deuda acumulada al registrarse, ingrésela aquí.</div>
+            </div>
+        </div>
+        <div class="mf">
+            <button class="btn btn-ghost" onclick="closeModal('modal-user')">Cancelar</button>
+            <button class="btn btn-success" onclick="saveUser()">💾 Guardar Usuario</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CARGO MENSUAL -->
+<div id="modal-cargo" class="modal hidden">
+    <div class="mc" style="max-width:440px">
+        <div class="mh">
+            <span class="mt">📅 Generar Cargo Mensual</span>
+            <button class="mx" onclick="closeModal('modal-cargo')">✕</button>
+        </div>
+        <div class="mb">
+            <div style="background:var(--err-bg);border:1px solid #fca5a5;border-radius:var(--r);padding:13px 15px;margin-bottom:16px;font-size:13px;color:var(--err-text);line-height:1.6">
+                ⚠️ Esta acción sumará <strong id="cargo-precio-preview">$1500</strong> a la deuda de
+                <strong id="cargo-users-count">0</strong> usuarios activos.<br>
+                Quienes lleguen a <strong>2 o más meses</strong> sin pagar quedarán como <strong style="color:var(--err)">MOROSOS</strong>.
+            </div>
+            <div class="fg">
+                <label class="fl">Mes y Año del cargo</label>
+                <select id="cargo-mes-sel" class="fc"></select>
+            </div>
+            <div id="cargo-ya-existe" style="display:none;background:var(--warn-bg);border:1px solid #fcd34d;border-radius:var(--r);padding:10px 14px;font-size:12.5px;color:var(--warn-text);margin-top:10px">
+                ⚠️ Este mes ya fue cobrado anteriormente. Si continúa se sumará de nuevo.
+            </div>
+        </div>
+        <div class="mf">
+            <button class="btn btn-ghost" onclick="closeModal('modal-cargo')">Cancelar</button>
+            <button class="btn btn-danger" onclick="confirmarCargo()">📅 Confirmar y Generar Cargo</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Categoría (Agregar/Editar) -->
+<div id="modal-category" class="modal hidden">
+    <div class="mc">
+        <div class="mh">
+            <span class="mt" id="modal-category-title">📦 Nueva Categoría</span>
+            <button class="mx" onclick="closeModal('modal-category')">✕</button>
+        </div>
+        <div class="mb">
+            <input type="hidden" id="cat-id">
+            <div class="fg">
+                <label class="fl">Nombre de Categoría</label>
+                <input type="text" id="cat-name" class="fc" placeholder="Ej: Categoría 1: Domiciliaria">
+            </div>
+            <div class="fg">
+                <label class="fl">Precio ($)</label>
+                <input type="number" id="cat-price" class="fc" min="0" step="0.01" placeholder="Ej: 16000">
+            </div>
+        </div>
+        <div class="mf">
+            <button class="btn btn-ghost" onclick="closeModal('modal-category')">Cancelar</button>
+            <button class="btn btn-success" onclick="saveCategory()">💾 Guardar Categoría</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Historial Completo -->
+<div id="modal-historial" class="modal hidden">
+    <div class="mc" style="width:900px;max-width:95vw">
+        <div class="mh">
+            <span class="mt" id="modal-historial-title">📋 Historial de Pagos</span>
+            <button class="mx" onclick="closeModal('modal-historial')">✕</button>
+        </div>
+        <div class="mb">
+            <div class="toolbar" style="margin-bottom:12px">
+                <input id="historial-search" class="fc" placeholder="Buscar en historial..." oninput="renderFullHistory()">
+                <button class="btn btn-primary" onclick="printFullHistory()">🖨 Imprimir Historial</button>
+            </div>
+            <div class="tbl-wrap" style="max-height:500px;overflow-y:auto">
+                <table>
+                    <thead style="position:sticky;top:0;background:var(--surface)">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Recibo</th>
+                            <th>Concepto</th>
+                            <th>Monto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbl-historial"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Pago -->
+<div id="modal-editar-pago" class="modal hidden">
+    <div class="mc">
+        <div class="mh">
+            <span class="mt">✏ Editar Pago</span>
+            <button class="mx" onclick="closeModal('modal-editar-pago')">✕</button>
+        </div>
+        <div class="mb">
+            <input type="hidden" id="edit-pago-idx">
+            <div class="fg">
+                <label class="fl">Fecha</label>
+                <input type="text" id="edit-pago-fecha" class="fc">
+            </div>
+            <div class="fg">
+                <label class="fl">Concepto</label>
+                <input type="text" id="edit-pago-concepto" class="fc">
+            </div>
+            <div class="fg">
+                <label class="fl">Monto ($)</label>
+                <input type="number" id="edit-pago-monto" class="fc" min="0">
+            </div>
+        </div>
+        <div class="mf">
+            <button class="btn btn-ghost" onclick="closeModal('modal-editar-pago')">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveEditedPayment()">💾 Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ÁREA DE IMPRESIÓN -->
+<div id="print-area"></div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+// ─── BASE DE DATOS ────────────────────────────────────────────
+const DB_KEY = 'HidroGestion_V6';
+const DEFAULT_CATEGORIES = [
+    { id: 1, name: 'Categoría 1: Domiciliaria (tipo consumo familiar) con tanque hasta 1100 litros, hasta tanto se cuente con el servicio medido', price: 16000 },
+    { id: 2, name: 'Categoría 2: Kioscos, Librerías, Farmacias, Ferreterías, Agropecuarias, Tiendas y Oficinas', price: 25000 },
+    { id: 3, name: 'Categoría 3: Comercial y Domiciliaria (detallados en Cat. 2) y en caso de alquileres se agrega cada unidad como Cat. 1', price: 32000 },
+    { id: 4, name: 'Categoría 4: Domiciliaria con Pileta de Natación, con recambio de agua y/o sistema de filtrado parcial de agua. (Puede optar por el Servicio Medido)', price: 25000 },
+    { id: 5, name: 'Categoría 5: Domiciliaria con Pileta tipo Pelopincho o similares', price: 25000 },
+    { id: 6, name: 'Categoría 6: Supermercados, Mercados, Estaciones de Servicios, Bares, Restaurantes, Restobares, Discos Pub, Talleres, Empresas de Transportes y Funerarias', price: 22000 },
+    { id: 7, name: 'Categoría 7: Hoteles, Hospedajes y Cabañas', price: 32000 },
+    { id: 8, name: 'Categoría 8: Lavaderos de Vehículos y Viveros', price: 40000 },
+    { id: 9, name: 'Categoría 9: Pensionados discapacitados con presentación de CUD (certificado único de discapacidad), jubilados con la mínima que presente comprobante Bancario', price: 13000 },
+    { id: 10, name: 'Categoría 10: Mantenimiento del servicio sin uso o consumo', price: 10000 },
+    { id: 11, name: 'Derecho de Conexión', price: 50000 },
+    { id: 12, name: 'Opción Servicio Medido por cada 10 m3', price: 15000 }
+];
+let DB = {
+    users: [],
+    payments: [],
+    trash: [],
+    cargosGenerados: [],
+    admins: [],
+    config: { 
+        empresa:'COOPERATIVA DE AGUA POTABLE', 
+        tel:'3755-000000', 
+        dir:'Barrio Centro s/n', 
+        cuit:'', 
+        precio:1500, 
+        password:'admin', 
+        reciboPrefijo:'0001', 
+        reciboNext:1, 
+        logo:'',
+        categories: DEFAULT_CATEGORIES
+    }
+};
+
+// Pagination state
+let currentPage = 1;
+let itemsPerPage = 25;
+let filteredUsers = [];
+
+// Debounce timer for search
+let searchDebounceTimer = null;
+
+// Current selected user for history
+let currentHistoryUser = null;
+
+// ─── INIT ─────────────────────────────────────────────────────
+window.onload = () => {
+    const saved = localStorage.getItem(DB_KEY);
+    if (saved) { try { DB = JSON.parse(saved); } catch(e){} }
+    DB.users.forEach(u => { if(!u.tel) u.tel=''; });
+    if (!DB.config.password) DB.config.password = 'admin';
+    if (!DB.cargosGenerados) DB.cargosGenerados = [];
+    if (!DB.config.reciboPrefijo) DB.config.reciboPrefijo = '0001';
+    if (DB.config.reciboNext==null) DB.config.reciboNext = 1;
+    if (DB.config.cuit==null) DB.config.cuit = '';
+    if (!DB.config.logo) DB.config.logo = '';
+    if (!DB.admins) DB.admins = [];
+    if (DB.admins.length===0) {
+        DB.admins.push({user:'admin', pass: DB.config.password||'admin'});
+        saveDB();
+    }
+    // Initialize categories
+    if (!DB.config.categories || !Array.isArray(DB.config.categories) || DB.config.categories.length===0) {
+        DB.config.categories = DEFAULT_CATEGORIES;
+    }
+    updateDash();
+    loadConfigForm();
+    buildMeses();
+    clock();
+};
+
+function saveDB() { localStorage.setItem(DB_KEY, JSON.stringify(DB)); updateDash(); }
+
+// ─── RELOJ ────────────────────────────────────────────────────
+function clock() {
+    const tick = () => {
+        const n = new Date();
+        const d = n.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+        const t = n.toLocaleTimeString('es-AR');
+        document.getElementById('tc-date').textContent = d;
+        document.getElementById('tc-time').textContent = t;
+        document.getElementById('sb-time').textContent  = t;
+    };
+    tick(); setInterval(tick,1000);
+}
+
+// ─── NAVEGACIÓN ───────────────────────────────────────────────
+const PAGE = { dashboard:'Panel Principal', usuarios:'Padrón de Usuarios',
+    cobros:'Caja y Facturación', deudores:'Morosos y Cortes', papelera:'Papelera', config:'Configuración' };
+
+function nav(el, id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+    document.getElementById('view-'+id).classList.remove('hidden');
+    document.querySelectorAll('.sb-item').forEach(m => m.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('pg-title').textContent = PAGE[id]||id;
+    document.getElementById('pg-crumb').textContent = 'Inicio / '+(PAGE[id]||id);
+    if (id==='usuarios') renderUsers();
+    if (id==='deudores') renderDeudores();
+    if (id==='papelera') renderTrash();
+    if (id==='config')   loadConfigForm();
+    // Limpiar búsqueda de cobros al salir
+    if (id!=='cobros') resetCobroUI();
+}
+function navById(id) { const el=document.querySelector(`[data-view="${id}"]`); if(el) nav(el,id); }
+
+// ─── TOAST ────────────────────────────────────────────────────
+function toast(msg, type='ok') {
+    const w = document.getElementById('toast-wrap');
+    const t = document.createElement('div');
+    const map = {ok:'t-ok',err:'t-err',info:'t-info'};
+    const ico = {ok:'✅',err:'❌',info:'ℹ️'};
+    t.className = 'toast '+(map[type]||'t-info');
+    t.innerHTML = `<span>${ico[type]||''}</span><span>${msg}</span>`;
+    w.appendChild(t);
+    setTimeout(()=>{ t.style.animation='tOut .3s ease forwards'; setTimeout(()=>t.remove(),300); }, 3200);
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────
+function login() {
+    const u = (document.getElementById('login-user').value||'').trim();
+    const p = document.getElementById('login-pass').value;
+    const e = document.getElementById('login-err');
+    const ok = (DB.admins||[]).some(a => a.user===u && a.pass===p);
+    if (ok) {
+        document.getElementById('login-screen').style.display='none';
+        window.CURRENT_ADMIN = u;
+        const n = document.querySelector('.sb-uname');
+        if (n) n.textContent = u;
+        toast('Bienvenido');
+    } else {
+        e.style.display='block';
+        document.getElementById('login-user').focus();
+        document.getElementById('login-pass').value='';
+    }
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────
+function fmt(n) { return parseFloat(n||0).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function parseFechaAR(f){ if(!f) return null; const p=String(f).split('/'); if(p.length!==3) return null; const d=parseInt(p[0],10), m=parseInt(p[1],10)-1, y=parseInt(p[2],10); return new Date(y,m,d); }
+function renderRecent(){
+    const tb  = document.getElementById('d-recent'); if(!tb) return;
+    const q   = (document.getElementById('recent-q')?.value||'').toLowerCase().trim();
+    const d1v = document.getElementById('recent-d1')?.value||'';
+    const d2v = document.getElementById('recent-d2')?.value||'';
+    const d1  = d1v? new Date(d1v+'T00:00:00'): null;
+    const d2  = d2v? new Date(d2v+'T23:59:59'): null;
+    let rows  = [...DB.payments];
+    if (q) rows = rows.filter(p => (p.nombre||'').toLowerCase().includes(q));
+    if (d1||d2) rows = rows.filter(p => { const fp=parseFechaAR(p.fecha); if(!fp) return false; if(d1 && fp<d1) return false; if(d2 && fp>d2) return false; return true; });
+    rows.sort((a,b)=> parseFechaAR(b.fecha)-parseFechaAR(a.fecha));
+    const limit = (q||d1||d2) ? 200 : 8;
+    const rec = rows.slice(0,limit);
+    tb.innerHTML = rec.length===0
+        ? '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px">Sin pagos registrados.</td></tr>'
+        : rec.map(p=>`<tr><td>${p.fecha}</td><td><span class="badge b-gray">N°${(DB.config.reciboPrefijo||'0001')}-${p.nro}</span></td>
+            <td>${p.nombre}</td><td>${p.concepto}</td>
+            <td style="font-weight:700;color:var(--ok)">$${fmt(p.monto)}</td></tr>`).join('');
+}
+function clearRecentSearch(){ const a=document.getElementById('recent-q'); const b=document.getElementById('recent-d1'); const c=document.getElementById('recent-d2'); if(a)a.value=''; if(b)b.value=''; if(c)c.value=''; renderRecent(); }
+
+function buildRMSelectors(){
+    const sm=document.getElementById('rm-mes'); const sy=document.getElementById('rm-ano');
+    if (!sm||!sy) return;
+    sm.innerHTML = MESES_NOMBRE.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+    const years = [...new Set(DB.payments.map(p=>{ const d=parseFechaAR(p.fecha); return d? d.getFullYear(): null; }).filter(Boolean))];
+    if (years.length===0) { const y=new Date().getFullYear(); years.push(y,y-1,y-2); }
+    years.sort((a,b)=>b-a);
+    sy.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+    const now=new Date(); sm.value=String(now.getMonth()); sy.value=String(now.getFullYear());
+}
+function renderRecaudacionMes(){
+    buildRMSelectors();
+    const sm=document.getElementById('rm-mes'); const sy=document.getElementById('rm-ano');
+    const tb=document.getElementById('rm-list'); const rz=document.getElementById('rm-resumen');
+    if(!sm||!sy||!tb||!rz) return;
+    const m=parseInt(sm.value,10); const y=parseInt(sy.value,10);
+    const rows = DB.payments.filter(p=>{ const d=parseFechaAR(p.fecha); return d && d.getMonth()===m && d.getFullYear()===y; }).sort((a,b)=>parseFechaAR(b.fecha)-parseFechaAR(a.fecha));
+    const total = rows.reduce((a,p)=>a+parseFloat(p.monto||0),0);
+    rz.textContent = `Mes: ${MESES_NOMBRE[m]} ${y} — Pagos: ${rows.length} — Total: $${fmt(total)}`;
+    tb.innerHTML = rows.length===0
+        ? '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px">Sin pagos en este mes.</td></tr>'
+        : rows.map(p=>`<tr><td>${p.fecha}</td><td>N°${(DB.config.reciboPrefijo||'0001')}-${p.nro}</td><td>${p.nombre}</td><td>${p.concepto}</td><td style="font-weight:700;color:var(--ok)">$${fmt(p.monto)}</td></tr>`).join('');
+}
+function imprimirRecaudacionMes(){
+    buildRMSelectors();
+    const sm=document.getElementById('rm-mes'); const sy=document.getElementById('rm-ano');
+    if(!sm||!sy) return;
+    const m=parseInt(sm.value,10); const y=parseInt(sy.value,10);
+    const rows = DB.payments.filter(p=>{ const d=parseFechaAR(p.fecha); return d && d.getMonth()===m && d.getFullYear()===y; }).sort((a,b)=>parseFechaAR(b.fecha)-parseFechaAR(a.fecha));
+    const total = rows.reduce((a,p)=>a+parseFloat(p.monto||0),0);
+    const htmlRows = rows.map(p=>`<tr><td>${p.fecha}</td><td>N°${(DB.config.reciboPrefijo||'0001')}-${p.nro}</td><td>${p.nombre}</td><td style="text-align:right">$${fmt(p.monto)}</td></tr>`).join('');
+    document.getElementById('print-area').innerHTML = `
+        <div class="boleta">
+            <div class="b-hdr">
+                <div>
+                    ${DB.config.logo ? `<img class="b-logo" src="${DB.config.logo}">` : ``}
+                    <h1>${DB.config.empresa}</h1>
+                    <p>${DB.config.dir}</p>
+                    <p>Tel: ${DB.config.tel}</p>
+                    ${DB.config.cuit ? `<p>CUIT: ${DB.config.cuit}</p>` : ``}
+                </div>
+                <div class="b-right">
+                    <h2>RECAUDACIÓN MENSUAL</h2>
+                    <p>${MESES_NOMBRE[m]} ${y}</p>
+                    <p>Total: $${fmt(total)}</p>
+                </div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+                <thead><tr><th style="text-align:left;padding:6px;border-bottom:1px solid #222">Fecha</th><th style="text-align:left;padding:6px;border-bottom:1px solid #222">Recibo</th><th style="text-align:left;padding:6px;border-bottom:1px solid #222">Cliente</th><th style="text-align:right;padding:6px;border-bottom:1px solid #222">Monto</th></tr></thead>
+                <tbody>${htmlRows||`<tr><td colspan="4" style="text-align:center;color:#666;padding:14px">Sin pagos en este mes.</td></tr>`}</tbody>
+            </table>
+            <div class="b-foot"><p>AGUA POTABLE SAN ANTONIO v6.0 — Sistema Integral de Agua Potable</p></div>
+        </div>`;
+    window.print();
+}
+
+function buildRASelector(){
+    const sy=document.getElementById('ra-ano'); if(!sy) return;
+    const years = [...new Set(DB.payments.map(p=>{ const d=parseFechaAR(p.fecha); return d? d.getFullYear(): null; }).filter(Boolean))];
+    if (years.length===0) { const y=new Date().getFullYear(); years.push(y,y-1,y-2); }
+    years.sort((a,b)=>b-a);
+    sy.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+    const now=new Date(); sy.value=String(now.getFullYear());
+}
+function renderRecaudacionAnual(){
+    buildRASelector();
+    const sy=document.getElementById('ra-ano'); const tb=document.getElementById('ra-list'); const rz=document.getElementById('ra-resumen');
+    if(!sy||!tb||!rz) return;
+    const y=parseInt(sy.value,10);
+    let total=0, totalPagos=0;
+    const rows = [];
+    for(let m=0;m<12;m++){
+        const pagos = DB.payments.filter(p=>{ const d=parseFechaAR(p.fecha); return d && d.getMonth()===m && d.getFullYear()===y; });
+        const sum = pagos.reduce((a,p)=>a+parseFloat(p.monto||0),0);
+        total += sum; totalPagos += pagos.length;
+        rows.push({m,sum,count:pagos.length});
+    }
+    rz.textContent = `Año: ${y} — Pagos: ${totalPagos} — Total: $${fmt(total)}`;
+    tb.innerHTML = rows.map(r=>`<tr><td>${MESES_NOMBRE[r.m]}</td><td>${r.count}</td><td style="font-weight:700;color:var(--ok)">$${fmt(r.sum)}</td></tr>`).join('');
+}
+function imprimirRecaudacionAnual(){
+    buildRASelector();
+    const sy=document.getElementById('ra-ano'); if(!sy) return;
+    const y=parseInt(sy.value,10);
+    let total=0, totalPagos=0;
+    const rows = [];
+    for(let m=0;m<12;m++){
+        const pagos = DB.payments.filter(p=>{ const d=parseFechaAR(p.fecha); return d && d.getMonth()===m && d.getFullYear()===y; });
+        const sum = pagos.reduce((a,p)=>a+parseFloat(p.monto||0),0);
+        total += sum; totalPagos += pagos.length;
+        rows.push({m,sum,count:pagos.length});
+    }
+    const htmlRows = rows.map(r=>`<tr><td>${MESES_NOMBRE[r.m]}</td><td>${r.count}</td><td style="text-align:right">$${fmt(r.sum)}</td></tr>`).join('');
+    document.getElementById('print-area').innerHTML = `
+        <div class="boleta">
+            <div class="b-hdr">
+                <div>
+                    ${DB.config.logo ? `<img class="b-logo" src="${DB.config.logo}">` : ``}
+                    <h1>${DB.config.empresa}</h1>
+                    <p>${DB.config.dir}</p>
+                    <p>Tel: ${DB.config.tel}</p>
+                    ${DB.config.cuit ? `<p>CUIT: ${DB.config.cuit}</p>` : ``}
+                </div>
+                <div class="b-right">
+                    <h2>RECAUDACIÓN ANUAL</h2>
+                    <p>${y}</p>
+                    <p>Total: $${fmt(total)}</p>
+                </div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+                <thead><tr><th style="text-align:left;padding:6px;border-bottom:1px solid #222">Mes</th><th style="text-align:left;padding:6px;border-bottom:1px solid #222">Pagos</th><th style="text-align:right;padding:6px;border-bottom:1px solid #222">Total</th></tr></thead>
+                <tbody>${htmlRows}</tbody>
+            </table>
+            <div class="b-foot"><p>AGUA POTABLE SAN ANTONIO v6.0 — Sistema Integral de Agua Potable</p></div>
+        </div>`;
+    window.print();
+}
+
+// ─── HELPERS ESTADO DE DEUDA ──────────────────────────────────
+// Devuelve cuántos meses completos debe el usuario según tarifa
+function mesesDeuda(u) {
+    const precio = parseFloat(DB.config.precio) || 1500;
+    if (precio <= 0) return 0;
+    return Math.floor(parseFloat(u.deuda || 0) / precio);
+}
+// 'aldia' | 'debe' (1 mes) | 'moroso' (2+ meses)
+function estadoUsuario(u) {
+    if (parseFloat(u.deuda || 0) <= 0) return 'aldia';
+    return mesesDeuda(u) >= 2 ? 'moroso' : 'debe';
+}
+// HTML del badge para la tabla
+function badgeEstado(u) {
+    const st = estadoUsuario(u);
+    const m  = mesesDeuda(u);
+    if (st === 'aldia')  return '<span class="badge b-ok">✓ Al día</span>';
+    if (st === 'moroso') return `<span class="badge b-moroso">🔴 MOROSO · ${m} mes${m!==1?'es':''} · $${fmt(u.deuda)}</span>`;
+    return `<span class="badge b-debe">⚠ Debe $${fmt(u.deuda)}</span>`;
+}
+
+function updateDash() {
+    const precio    = parseFloat(DB.config.precio) || 1500;
+    const morosos   = DB.users.filter(u => estadoUsuario(u) === 'moroso');
+    const conDeuda  = DB.users.filter(u => parseFloat(u.deuda) > 0);
+    const totalDeuda= conDeuda.reduce((a,u)=>a+parseFloat(u.deuda||0),0);
+    const totalRec  = DB.payments.reduce((a,p)=>a+parseFloat(p.monto||0),0);
+    const hoy       = new Date().toLocaleDateString('es-AR');
+    const pagHoy    = DB.payments.filter(p=>p.fecha===hoy);
+    const monHoy    = pagHoy.reduce((a,p)=>a+parseFloat(p.monto||0),0);
+
+    document.getElementById('d-users').textContent    = DB.users.length;
+    document.getElementById('d-deudores').textContent = morosos.length;
+    document.getElementById('d-deuda-tot').textContent= 'Deuda total (todos): $'+fmt(totalDeuda);
+    document.getElementById('d-total').textContent    = '$'+fmt(totalRec);
+    document.getElementById('d-npagos').textContent   = DB.payments.length+' pago(s) registrado(s)';
+    document.getElementById('d-hoy').textContent      = pagHoy.length;
+    document.getElementById('d-hoy-monto').textContent= '$'+fmt(monHoy)+' recaudado hoy';
+
+    // Sidebar badge: solo morosos
+    document.getElementById('badge-deudores').textContent = morosos.length;
+    document.getElementById('badge-trash').textContent    = DB.trash.length;
+
+    renderRecent();
+    renderRecaudacionAnual();
+    renderRecaudacionMes();
+
+    // Actualizar selects de barrios
+    const barrios = [...new Set(DB.users.map(u=>u.barrio).filter(Boolean))].sort();
+    ['usr-barrio','deu-barrio'].forEach(id=>{
+        const sel=document.getElementById(id); if(!sel)return;
+        const cur=sel.value;
+        sel.innerHTML='<option value="">Todos los Barrios</option>';
+        barrios.forEach(b=>{ sel.innerHTML+=`<option value="${b}"${cur===b?' selected':''}>${b}</option>`; });
+    });
+}
+
+// ─── USUARIOS ─────────────────────────────────────────────────
+function handleUserSearch() {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+        currentPage = 1;
+        renderUsers();
+    }, 300); // Debounce for 300ms
+}
+
+function openUserHistoryFromList(idx) {
+    const u = DB.users[idx];
+    currentHistoryUser = u;
+    document.getElementById('modal-historial-title').textContent = `📋 Historial de Pagos - ${u.apellido}, ${u.nombre}`;
+    document.getElementById('modal-historial').classList.remove('hidden');
+    renderFullHistory();
+}
+
+function renderUsers() {
+    const tbody = document.getElementById('tbl-users');
+    const empty = document.getElementById('usr-empty');
+    const term  = (document.getElementById('usr-search').value||'').toLowerCase();
+    const barrF = document.getElementById('usr-barrio').value;
+    const estF  = document.getElementById('usr-estado').value;
+
+    // Filter users
+    filteredUsers = DB.users.map((u,i)=>({...u,_i:i})).filter(u=>{
+        const txt = `${u.nombre} ${u.apellido} ${u.dni} ${u.barrio} ${u.tel||''}`.toLowerCase();
+        if (!txt.includes(term)) return false;
+        if (barrF && u.barrio!==barrF) return false;
+        const st = estadoUsuario(u);
+        if (estF==='aldia'  && st !== 'aldia')  return false;
+        if (estF==='debe'   && st !== 'debe')   return false;
+        if (estF==='moroso' && st !== 'moroso') return false;
+        return true;
+    });
+
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+    } else if (currentPage < 1) {
+        currentPage = 1;
+    }
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    const pageUsers = filteredUsers.slice(startIdx, endIdx);
+
+    // Update count
+    document.getElementById('usr-count').textContent =
+        `Mostrando ${pageUsers.length} de ${filteredUsers.length} resultados (${DB.users.length} total)`;
+
+    // Update pagination controls
+    document.getElementById('usr-page-info').textContent =
+        `Página ${currentPage} de ${totalPages || 1}`;
+    document.getElementById('usr-prev').disabled = currentPage === 1;
+    document.getElementById('usr-next').disabled = currentPage >= totalPages || totalPages === 0;
+
+    if (!filteredUsers.length) { 
+        tbody.innerHTML=''; 
+        empty.classList.remove('hidden'); 
+        document.getElementById('usr-pagination').style.display = 'none';
+        return; 
+    }
+    empty.classList.add('hidden');
+    document.getElementById('usr-pagination').style.display = 'flex';
+    
+    tbody.innerHTML = pageUsers.map(u=>`<tr style="cursor:pointer" onclick="openUserHistoryFromList(${u._i})">
+        <td><strong>${u.dni||'—'}</strong></td>
+        <td>${u.apellido}, ${u.nombre}</td>
+        <td style="font-size:12px;color:var(--text2)">${u.barrio} — Mz.${u.mz} Lt.${u.lote}</td>
+        <td style="font-size:12px">${u.tel||'<span style="color:#cbd5e1">—</span>'}</td>
+        <td><span class="badge b-gray">${getCategoryDisplay(u.cat)}</span></td>
+        <td>${badgeEstado(u)}</td>
+        <td onclick="event.stopPropagation()">
+            <button class="btn btn-ghost btn-sm" onclick="editUser(${u._i})" title="Editar">✏️</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--ok)" onclick="irACobro('${u.dni}')" title="Cobrar">💰</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--err)" onclick="trashUser(${u._i})" title="Eliminar">🗑️</button>
+        </td></tr>`).join('');
+}
+
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderUsers();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderUsers();
+    }
+}
+
+function changePerPage() {
+    itemsPerPage = parseInt(document.getElementById('usr-per-page').value, 10);
+    currentPage = 1;
+    renderUsers();
+}
+
+function irACobro(dni) {
+    navById('cobros');
+    setTimeout(()=>{ document.getElementById('cobro-input').value=dni; cobrosSearch(); },80);
+}
+
+function getCategoryById(id) {
+    return DB.config.categories.find(cat => cat.id === id);
+}
+function getCategoryPrice(categoryIdOrName) {
+    // If it's an id, get from DB.config.categories
+    if (typeof categoryIdOrName === 'number') {
+        const cat = getCategoryById(categoryIdOrName);
+        return cat ? cat.price : 0;
+    }
+    // If it's a name (for backwards compatibility)
+    const cat = DB.config.categories.find(c => c.name === categoryIdOrName);
+    if (cat) return cat.price;
+    // Fallback to parsing from string (for existing users)
+    const match = categoryIdOrName.match(/\$[\s]*([\d\.]+),?([\d]*)/);
+    if (!match) return 0;
+    const pesos = match[1].replace(/\./g, '');
+    const centavos = match[2] || '00';
+    return parseFloat(pesos + '.' + centavos);
+}
+function getCategoryDisplay(categoryIdOrName) {
+    if (typeof categoryIdOrName === 'number') {
+        const cat = getCategoryById(categoryIdOrName);
+        return cat ? `${cat.name} $${fmt(cat.price)}` : '';
+    }
+    return categoryIdOrName;
+}
+function renderCategoryList() {
+    const listElement = document.getElementById('category-list');
+    if (!listElement) return;
+    if (!DB.config.categories.length) {
+        listElement.innerHTML = '<div class="empty"><div class="empty-ico">📦</div><p>Sin categorías.</p></div>';
+        return;
+    }
+    listElement.innerHTML = DB.config.categories.map(cat => `
+        <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
+            <div style="display:flex;flex-direction:column;">
+                <span style="font-weight:700;">${cat.name}</span>
+                <span style="font-size:12px;color:var(--text2);">Precio: $${fmt(cat.price)}</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+                <button class="btn btn-ghost btn-sm" onclick="openCategoryModal(${cat.id})">✏️</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--err)" onclick="deleteCategory(${cat.id})">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+}
+function openCategoryModal(catId = null) {
+    if (catId === null) {
+        // Add new category
+        document.getElementById('modal-category-title').textContent = '📦 Nueva Categoría';
+        document.getElementById('cat-id').value = '';
+        document.getElementById('cat-name').value = '';
+        document.getElementById('cat-price').value = '';
+    } else {
+        // Edit existing category
+        const cat = getCategoryById(catId);
+        if (!cat) return;
+        document.getElementById('modal-category-title').textContent = '✏️ Editar Categoría';
+        document.getElementById('cat-id').value = catId;
+        document.getElementById('cat-name').value = cat.name;
+        document.getElementById('cat-price').value = cat.price;
+    }
+    document.getElementById('modal-category').classList.remove('hidden');
+    setTimeout(() => document.getElementById('cat-name').focus(), 80);
+}
+function saveCategory() {
+    const catIdInput = document.getElementById('cat-id').value;
+    const name = document.getElementById('cat-name').value.trim();
+    const price = parseFloat(document.getElementById('cat-price').value);
+    if (!name) return toast('El nombre es obligatorio', 'err');
+    if (isNaN(price) || price < 0) return toast('Precio inválido', 'err');
+    if (catIdInput === '') {
+        // Add new category
+        const newId = DB.config.categories.length > 0
+            ? Math.max(...DB.config.categories.map(c => c.id)) + 1
+            : 1;
+        DB.config.categories.push({ id: newId, name, price });
+        toast('Categoría creada');
+    } else {
+        // Edit existing category
+        const catId = parseInt(catIdInput, 10);
+        const catIndex = DB.config.categories.findIndex(c => c.id === catId);
+        if (catIndex === -1) return;
+        DB.config.categories[catIndex].name = name;
+        DB.config.categories[catIndex].price = price;
+        toast('Categoría actualizada');
+    }
+    saveDB();
+    closeModal('modal-category');
+    renderCategoryList();
+}
+function deleteCategory(catId) {
+    const userCount = DB.users.filter(u => u.cat === catId).length;
+    if (userCount > 0) {
+        return toast(`No se puede eliminar: hay ${userCount} usuario(s) usando esta categoría`, 'err');
+    }
+    if (!confirm('¿Eliminar esta categoría?')) return;
+    DB.config.categories = DB.config.categories.filter(c => c.id !== catId);
+    saveDB();
+    renderCategoryList();
+    toast('Categoría eliminada');
+}
+function renderCategorySelect(selectElement, selectedValue) {
+    if (!selectElement) return;
+    selectElement.innerHTML = DB.config.categories.map(cat => {
+        const display = `${cat.name} $${fmt(cat.price)}`;
+        // Check if selectedValue matches (either id or name/old string)
+        let selected = false;
+        if (typeof selectedValue === 'number') {
+            selected = cat.id === selectedValue;
+        } else {
+            selected = selectedValue === cat.name || selectedValue === display;
+        }
+        return `<option value="${cat.id}" ${selected ? 'selected' : ''}>${display}</option>`;
+    }).join('');
+}
+
+function openUserModal(idx=null) {
+    if (idx===null) {
+        document.getElementById('modal-user-title').textContent='👤 Nuevo Usuario';
+        ['u-id','u-nombre','u-apellido','u-dni','u-tel','u-barrio','u-mz','u-lote'].forEach(id=>document.getElementById(id).value='');
+        document.getElementById('u-deuda').value='0';
+        // Build category select with default selected
+        renderCategorySelect(document.getElementById('u-cat'), DB.config.categories[0].id);
+    } else {
+        const u = DB.users[idx];
+        document.getElementById('modal-user-title').textContent='✏️ Editar Usuario';
+        document.getElementById('u-id').value      = idx;
+        document.getElementById('u-nombre').value  = u.nombre;
+        document.getElementById('u-apellido').value= u.apellido;
+        document.getElementById('u-dni').value     = u.dni;
+        document.getElementById('u-tel').value     = u.tel||'';
+        // Build category select with user's category selected
+        renderCategorySelect(document.getElementById('u-cat'), u.cat);
+        document.getElementById('u-barrio').value  = u.barrio;
+        document.getElementById('u-mz').value      = u.mz;
+        document.getElementById('u-lote').value    = u.lote;
+        document.getElementById('u-deuda').value   = u.deuda;
+    }
+    document.getElementById('modal-user').classList.remove('hidden');
+    setTimeout(()=>document.getElementById('u-nombre').focus(),80);
+}
+function editUser(i){ openUserModal(i); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+
+function saveUser() {
+    const id = document.getElementById('u-id').value;
+    // Get category id (as number)
+    const catId = parseInt(document.getElementById('u-cat').value, 10);
+    const d = {
+        nombre:   document.getElementById('u-nombre').value.trim(),
+        apellido: document.getElementById('u-apellido').value.trim(),
+        dni:      document.getElementById('u-dni').value.trim(),
+        tel:      document.getElementById('u-tel').value.trim(),
+        cat:      catId,
+        barrio:   document.getElementById('u-barrio').value.trim(),
+        mz:       document.getElementById('u-mz').value.trim(),
+        lote:     document.getElementById('u-lote').value.trim(),
+        deuda:    parseFloat(document.getElementById('u-deuda').value)||0
+    };
+    if (!d.nombre||!d.apellido) return toast('Nombre y apellido son obligatorios','err');
+    if (!d.dni)                 return toast('El DNI es obligatorio','err');
+
+    if (id==='') {
+        if (DB.users.find(u=>u.dni===d.dni)) return toast('Ya existe un usuario con ese DNI','err');
+        DB.users.push(d); toast('Usuario creado');
+    } else {
+        const n=parseInt(id);
+        if (DB.users.find((u,i)=>u.dni===d.dni&&i!==n)) return toast('DNI ya registrado en otro usuario','err');
+        DB.users[n]=d; toast('Usuario actualizado');
+    }
+    saveDB(); closeModal('modal-user'); renderUsers();
+}
+
+function trashUser(idx) {
+    if (!confirm(`¿Enviar a papelera a ${DB.users[idx].apellido}, ${DB.users[idx].nombre}?`)) return;
+    const u=DB.users[idx];
+    u.deletedAt=new Date().toLocaleDateString('es-AR');
+    DB.trash.push(u); DB.users.splice(idx,1);
+    saveDB(); renderUsers(); toast('Enviado a papelera','info');
+}
+
+// ─── PAPELERA ─────────────────────────────────────────────────
+function renderTrash() {
+    const tb=document.getElementById('tbl-trash');
+    const em=document.getElementById('trash-empty');
+    if (!DB.trash.length){ tb.innerHTML=''; em.classList.remove('hidden'); return; }
+    em.classList.add('hidden');
+    tb.innerHTML = DB.trash.map((u,i)=>`<tr>
+        <td>${u.apellido}, ${u.nombre}</td><td>${u.dni}</td>
+        <td>${u.barrio||'—'}</td><td>${u.deletedAt||'—'}</td>
+        <td>
+            <button class="btn btn-success btn-sm" onclick="restoreUser(${i})">♻️ Restaurar</button>
+            <button class="btn btn-danger btn-sm" onclick="permDel(${i})">Eliminar</button>
+        </td></tr>`).join('');
+}
+function restoreUser(i){ const u=DB.trash[i]; delete u.deletedAt; DB.users.push(u); DB.trash.splice(i,1); saveDB(); renderTrash(); toast('Usuario restaurado'); }
+function permDel(i){ if(!confirm('¿Eliminar definitivamente?'))return; DB.trash.splice(i,1); saveDB(); renderTrash(); toast('Eliminado','info'); }
+function vaciarPapelera(){ if(!DB.trash.length)return toast('Papelera vacía','info'); if(!confirm(`¿Eliminar ${DB.trash.length} registro(s) definitivamente?`))return; DB.trash=[]; saveDB(); renderTrash(); toast('Papelera vaciada','info'); }
+
+// ─── COBROS — BUSCADOR EN TIEMPO REAL ─────────────────────────
+let currentIdx = null;
+let sugIdx = -1;
+
+function cobrosSearch() {
+    const val = document.getElementById('cobro-input').value.trim().toLowerCase();
+    const box = document.getElementById('cobro-sugs');
+    sugIdx = -1;
+    if (!val || val.length < 2) { box.classList.add('hidden'); return; }
+
+    const matches = DB.users.map((u,i)=>({...u,_i:i})).filter(u=>{
+        const txt=`${u.dni} ${u.nombre} ${u.apellido} ${u.apellido} ${u.nombre}`.toLowerCase();
+        return txt.includes(val);
+    }).slice(0,8);
+
+    if (!matches.length) { box.classList.add('hidden'); return; }
+
+    box.innerHTML = matches.map((u,i)=>`
+        <div class="sug-item" data-idx="${u._i}" onmousedown="selectClient(${u._i})">
+            <div class="sug-name">${u.apellido}, ${u.nombre}</div>
+            <div class="sug-detail">DNI: ${u.dni} &nbsp;•&nbsp; ${u.barrio} Mz.${u.mz} Lt.${u.lote}</div>
+        </div>`).join('');
+    box.classList.remove('hidden');
+}
+
+function cobrosKey(e) {
+    const box = document.getElementById('cobro-sugs');
+    const items = box.querySelectorAll('.sug-item');
+    if (e.key==='ArrowDown'){ e.preventDefault(); sugIdx=Math.min(sugIdx+1,items.length-1); highlightSug(items); }
+    else if (e.key==='ArrowUp'){ e.preventDefault(); sugIdx=Math.max(sugIdx-1,0); highlightSug(items); }
+    else if (e.key==='Enter'){
+        if (sugIdx>=0 && items[sugIdx]) {
+            const idx=parseInt(items[sugIdx].dataset.idx);
+            selectClient(idx);
+        } else if (items.length===1) {
+            selectClient(parseInt(items[0].dataset.idx));
+        }
+    }
+    else if (e.key==='Escape'){ box.classList.add('hidden'); }
+}
+function highlightSug(items){
+    items.forEach((it,i)=>it.classList.toggle('selected',i===sugIdx));
+    if(items[sugIdx]) items[sugIdx].scrollIntoView({block:'nearest'});
+}
+
+function selectClient(idx) {
+    const u = DB.users[idx];
+    currentIdx = idx;
+    currentHistoryUser = u;
+    document.getElementById('cobro-sugs').classList.add('hidden');
+    document.getElementById('cobro-input').value = `${u.apellido}, ${u.nombre}  (DNI: ${u.dni})`;
+    document.getElementById('cobro-form').classList.remove('hidden');
+    document.getElementById('cf-nombre').textContent   = u.apellido+', '+u.nombre;
+    document.getElementById('cf-detalle').textContent  = `DNI: ${u.dni}  •  ${u.barrio} Mz.${u.mz} Lt.${u.lote}  •  Tel: ${u.tel||'—'}`;
+    // Populate category select
+    const catSelect = document.getElementById('cf-cat-select');
+    catSelect.innerHTML = DB.config.categories.map(cat => {
+        const selected = (typeof u.cat === 'number' && cat.id === u.cat) || (u.cat === cat.name) || (getCategoryDisplay(u.cat) === `${cat.name} $${fmt(cat.price)}`);
+        return `<option value="${cat.id}" ${selected ? 'selected' : ''}>${cat.name} $${fmt(cat.price)}</option>`;
+    }).join('');
+    document.getElementById('cf-deuda').textContent    = parseFloat(u.deuda)>0
+        ? `Deuda pendiente: $${fmt(u.deuda)}` : 'Sin deuda pendiente';
+    const categoryPrice = getCategoryPrice(u.cat);
+    document.getElementById('cf-monto').value = categoryPrice || DB.config.precio || 1500;
+    document.getElementById('cf-obs').value   = '';
+
+    // Show "Ver Historial Completo" button
+    const btnHistorial = document.getElementById('btn-historial-completo');
+    btnHistorial.style.display = 'inline-flex';
+
+    const pagos = DB.payments.filter(p=>String(p.dni)===String(u.dni)).reverse();
+    const hist  = document.getElementById('cobro-hist');
+    if (!pagos.length) {
+        hist.innerHTML='<div class="empty"><div class="empty-ico">📭</div><p>Sin pagos previos.</p></div>';
+    } else {
+        hist.innerHTML = pagos.slice(0,12).map(p=>`
+            <div class="hist-item">
+                <div style="display:flex;justify-content:space-between">
+                    <span>${p.concepto}</span>
+                    <span class="hist-amt">$${fmt(p.monto)}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div class="hist-date">${p.fecha} — Recibo N°${(DB.config.reciboPrefijo||'0001')}-${p.nro}</div>
+                    <div>
+                        <button class="btn btn-ghost btn-sm" onclick="openEditPaymentModal(${DB.payments.indexOf(p)})" style="font-size:10px">✏️</button>
+                        <button class="btn btn-ghost btn-sm" onclick="deletePayment(${DB.payments.indexOf(p)})" style="font-size:10px;color:var(--err)">🗑️</button>
+                    </div>
+                </div>
+            </div>`).join('');
+    }
+}
+
+function updateClientCategory(selectElement) {
+    if (currentIdx === null) return;
+    const newCatId = parseInt(selectElement.value);
+    const newCat = getCategoryById(newCatId);
+    if (!newCat) return;
+    // Update the user's category in DB
+    DB.users[currentIdx].cat = newCatId;
+    // Update the monto input to the new category price
+    document.getElementById('cf-monto').value = newCat.price;
+    // Save to localStorage
+    saveDB();
+    // Show success feedback
+    toast('Categoría actualizada correctamente');
+}
+
+// Cerrar sugerencias al hacer click fuera
+document.addEventListener('click', e => {
+    if (!e.target.closest('#cobro-input') && !e.target.closest('#cobro-sugs')) {
+        const box=document.getElementById('cobro-sugs');
+        if(box) box.classList.add('hidden');
+    }
+});
+
+function resetCobroUI() {
+    currentIdx=null; 
+    sugIdx=-1;
+    currentHistoryUser = null;
+    const inp=document.getElementById('cobro-input'); if(inp) inp.value='';
+    const box=document.getElementById('cobro-sugs'); if(box) box.classList.add('hidden');
+    const frm=document.getElementById('cobro-form'); if(frm) frm.classList.add('hidden');
+    const hist=document.getElementById('cobro-hist');
+    if(hist) hist.innerHTML='<div class="empty"><div class="empty-ico">💳</div><p>Seleccione un cliente para ver su historial.</p></div>';
+    // Hide "Ver Historial Completo" button
+    const btnHistorial = document.getElementById('btn-historial-completo');
+    if(btnHistorial) btnHistorial.style.display = 'none';
+}
+
+// Payment history functions
+function openFullHistory() {
+    if (!currentHistoryUser) return;
+    document.getElementById('modal-historial-title').textContent = `📋 Historial de Pagos - ${currentHistoryUser.apellido}, ${currentHistoryUser.nombre}`;
+    document.getElementById('modal-historial').classList.remove('hidden');
+    renderFullHistory();
+}
+
+function renderFullHistory() {
+    if (!currentHistoryUser) return;
+    const searchTerm = (document.getElementById('historial-search').value||'').toLowerCase();
+    const pagos = DB.payments.filter(p=>String(p.dni)===String(currentHistoryUser.dni)).reverse();
+    const filteredPagos = pagos.filter(p=>
+        (p.concepto||'').toLowerCase().includes(searchTerm) ||
+        (p.fecha||'').toLowerCase().includes(searchTerm) ||
+        String(p.nro).includes(searchTerm)
+    );
+    const tbody = document.getElementById('tbl-historial');
+    if (!filteredPagos.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">Sin resultados</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filteredPagos.map((p, idx) => {
+        const originalIdx = DB.payments.indexOf(p);
+        return `<tr>
+            <td>${p.fecha}</td>
+            <td><span class="badge b-gray">${(DB.config.reciboPrefijo||'0001')}-${p.nro}</span></td>
+            <td>${p.concepto}</td>
+            <td style="font-weight:700;color:var(--ok)">$${fmt(p.monto)}</td>
+            <td>
+                <button class="btn btn-ghost btn-sm" onclick="openEditPaymentModal(${originalIdx})">✏️</button>
+                <button class="btn btn-ghost btn-sm" onclick="deletePayment(${originalIdx})" style="color:var(--err)">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function openEditPaymentModal(idx) {
+    const pago = DB.payments[idx];
+    document.getElementById('edit-pago-idx').value = idx;
+    document.getElementById('edit-pago-fecha').value = pago.fecha;
+    document.getElementById('edit-pago-concepto').value = pago.concepto;
+    document.getElementById('edit-pago-monto').value = pago.monto;
+    document.getElementById('modal-editar-pago').classList.remove('hidden');
+}
+
+function saveEditedPayment() {
+    const idx = parseInt(document.getElementById('edit-pago-idx').value, 10);
+    const pago = DB.payments[idx];
+    if (!pago) return;
+    
+    const oldMonto = parseFloat(pago.monto);
+    const newMonto = parseFloat(document.getElementById('edit-pago-monto').value);
+    
+    pago.fecha = document.getElementById('edit-pago-fecha').value;
+    pago.concepto = document.getElementById('edit-pago-concepto').value;
+    pago.monto = newMonto;
+
+    // Adjust user's debt if needed
+    const user = DB.users.find(u => String(u.dni) === String(pago.dni));
+    if (user) {
+        user.deuda = parseFloat(user.deuda) + oldMonto - newMonto;
+        if (user.deuda < 0) user.deuda = 0;
+    }
+    
+    saveDB();
+    closeModal('modal-editar-pago');
+    toast('Pago actualizado');
+    if (currentIdx !== null) selectClient(currentIdx); // Refresh current client view
+    renderFullHistory();
+}
+
+function deletePayment(idx) {
+    if (!confirm('¿Eliminar este pago? Esto afectará la deuda del usuario.')) return;
+    const pago = DB.payments[idx];
+    const user = DB.users.find(u => String(u.dni) === String(pago.dni));
+    
+    // Add the payment amount back to the user's debt
+    if (user) {
+        user.deuda = parseFloat(user.deuda) + parseFloat(pago.monto);
+    }
+    
+    DB.payments.splice(idx, 1);
+    saveDB();
+    toast('Pago eliminado');
+    if (currentIdx !== null) selectClient(currentIdx); // Refresh current client view
+    renderFullHistory();
+}
+
+function printFullHistory() {
+    if (!currentHistoryUser) return;
+    const pagos = DB.payments.filter(p=>String(p.dni)===String(currentHistoryUser.dni)).reverse();
+    const total = pagos.reduce((sum, p) => sum + parseFloat(p.monto), 0);
+    
+    document.getElementById('print-area').innerHTML = `
+        <div class="boleta">
+            <div class="b-hdr">
+                <div>
+                    ${DB.config.logo ? `<img class="b-logo" src="${DB.config.logo}">` : ''}
+                    <h1>${DB.config.empresa}</h1>
+                    <p>${DB.config.dir}</p>
+                    <p>Tel: ${DB.config.tel}</p>
+                </div>
+                <div class="b-right">
+                    <h2>HISTORIAL DE PAGOS</h2>
+                    <p>Cliente: ${currentHistoryUser.apellido}, ${currentHistoryUser.nombre}</p>
+                    <p>DNI: ${currentHistoryUser.dni}</p>
+                    <p>Fecha: ${new Date().toLocaleDateString('es-AR')}</p>
+                </div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;padding:6px;border-bottom:2px solid #222">Fecha</th>
+                        <th style="text-align:left;padding:6px;border-bottom:2px solid #222">Recibo</th>
+                        <th style="text-align:left;padding:6px;border-bottom:2px solid #222">Concepto</th>
+                        <th style="text-align:right;padding:6px;border-bottom:2px solid #222">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${pagos.map(p => `
+                        <tr>
+                            <td style="padding:6px;border-bottom:1px solid #ddd">${p.fecha}</td>
+                            <td style="padding:6px;border-bottom:1px solid #ddd">${(DB.config.reciboPrefijo||'0001')}-${p.nro}</td>
+                            <td style="padding:6px;border-bottom:1px solid #ddd">${p.concepto}</td>
+                            <td style="padding:6px;border-bottom:1px solid #ddd;text-align:right">$${fmt(p.monto)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <div style="display:flex;justify-content:flex-end;margin-top:16px">
+                <div style="font-size:16px;font-weight:bold;border-top:2px solid #222;padding-top:10px">
+                    Total Pagado: $${fmt(total)}
+                </div>
+            </div>
+            <div class="b-foot">
+                <p>Sistema de Agua v6.0 — Sistema Integral de Agua Potable</p>
+            </div>
+        </div>
+    `;
+    window.print();
+}
+
+function buildMeses() {
+    const sel=document.getElementById('cf-mes');
+    const M=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const now=new Date(); sel.innerHTML='';
+    for(let y=now.getFullYear();y>=now.getFullYear()-2;y--){
+        for(let m=(y===now.getFullYear()?now.getMonth():11);m>=0;m--){
+            const o=document.createElement('option');
+            o.value=o.textContent=M[m]+' '+y;
+            sel.appendChild(o);
+        }
+    }
+}
+
+function procesarPago() {
+    if (currentIdx===null) return;
+    const u     = DB.users[currentIdx];
+    const monto = parseFloat(document.getElementById('cf-monto').value);
+    const mes   = document.getElementById('cf-mes').value;
+    const obs   = document.getElementById('cf-obs').value.trim();
+
+    if (!monto||monto<=0) return toast('Ingrese un monto válido','err');
+
+    const fecha = new Date().toLocaleDateString('es-AR');
+    const nro   = String(DB.config.reciboNext||1);
+    const pago  = { dni:u.dni, nombre:u.apellido+' '+u.nombre, monto, concepto:mes+(obs?' — '+obs:''), fecha, nro };
+
+    DB.payments.push(pago);
+    if (parseFloat(u.deuda)>0) u.deuda=Math.max(0,parseFloat(u.deuda)-monto);
+    DB.config.reciboNext = (parseInt(nro,10)||0) + 1;
+    saveDB();
+    printRecibo(u, pago);
+    toast(`Pago registrado — Recibo N°${nro}`);
+    resetCobroUI();
+}
+
+function printRecibo(u, p) {
+    document.getElementById('print-area').innerHTML = `
+        <div class="boleta">
+            <div class="b-hdr">
+                <div>
+                    ${DB.config.logo ? `<img class="b-logo" src="${DB.config.logo}">` : ``}
+                    <h1>${DB.config.empresa}</h1>
+                    <p>${DB.config.dir}</p>
+                    <p>Tel: ${DB.config.tel}</p>
+                    ${DB.config.cuit ? `<p>CUIT: ${DB.config.cuit}</p>` : ``}
+                </div>
+                <div class="b-right">
+                    <h2>RECIBO OFICIAL</h2>
+                    <p>N°: ${(DB.config.reciboPrefijo||'0001')}-${p.nro}</p>
+                    <p>Fecha: ${p.fecha}</p>
+                </div>
+            </div>
+            <div class="b-row"><span><b>Cliente:</b></span><span>${u.apellido}, ${u.nombre}</span></div>
+            <div class="b-row"><span><b>DNI:</b></span><span>${u.dni}</span></div>
+            <div class="b-row"><span><b>Domicilio:</b></span><span>${u.barrio} — Mz.${u.mz} Lt.${u.lote}</span></div>
+            <div class="b-row"><span><b>Teléfono:</b></span><span>${u.tel||'—'}</span></div>
+            <div class="b-row"><span><b>Categoría:</b></span><span>${u.cat}</span></div>
+            <br>
+            <div class="b-row"><b>Concepto</b><b>Importe</b></div>
+            <hr>
+            <div class="b-row"><span>Servicio Agua Potable — ${p.concepto}</span><span>$${fmt(p.monto)}</span></div>
+            <hr>
+            <div class="b-row b-total"><b>TOTAL ABONADO</b><b>$${fmt(p.monto)}</b></div>
+            <div class="b-foot">
+                <p>Gracias por su pago. Conserve este comprobante.</p>
+                <p>HidroGestión v6.0 — Sistema Integral de Agua Potable</p>
+            </div>
+        </div>`;
+    window.print();
+}
+
+// ─── DEUDORES ─────────────────────────────────────────────────
+let SEL_DEU = new Set();
+function toggleSel(dni, ch){ if(ch) SEL_DEU.add(String(dni)); else SEL_DEU.delete(String(dni)); const s=document.getElementById('sel-count'); if(s) s.textContent='Seleccionados: '+SEL_DEU.size; }
+function clearSel(){ SEL_DEU = new Set(); const s=document.getElementById('sel-count'); if(s) s.textContent='Seleccionados: 0'; renderDeudores(); }
+function renderDeudores() {
+    const tb      = document.getElementById('tbl-deudores');
+    const em      = document.getElementById('deu-empty');
+    const filtB   = document.getElementById('deu-barrio').value;
+    const term    = (document.getElementById('deu-search').value||'').toLowerCase();
+    const filtSt  = document.getElementById('deu-filtro-estado').value; // 'moroso' | 'todos'
+
+    // Calcular banners independientemente del filtro
+    const morososAll = DB.users.filter(u => estadoUsuario(u) === 'moroso');
+    const avisoAll   = DB.users.filter(u => estadoUsuario(u) === 'debe');
+    document.getElementById('deu-morosos-count').textContent  = morososAll.length;
+    document.getElementById('deu-morosos-monto').textContent  = '$'+fmt(morososAll.reduce((a,u)=>a+parseFloat(u.deuda||0),0));
+    document.getElementById('deu-aviso-count').textContent    = avisoAll.length;
+    document.getElementById('deu-aviso-monto').textContent    = '$'+fmt(avisoAll.reduce((a,u)=>a+parseFloat(u.deuda||0),0));
+
+    // Filtrar lista visible
+    const list = DB.users.filter(u => {
+        if (filtSt === 'moroso' && estadoUsuario(u) !== 'moroso') return false;
+        if (filtSt === 'todos'  && parseFloat(u.deuda||0) <= 0)   return false;
+        if (filtB && u.barrio !== filtB) return false;
+        const txt = `${u.nombre} ${u.apellido} ${u.dni} ${u.barrio}`.toLowerCase();
+        return txt.includes(term);
+    });
+
+    if (!list.length) { tb.innerHTML=''; em.classList.remove('hidden'); return; }
+    em.classList.add('hidden');
+    tb.innerHTML = '';
+    [...list].sort((a,b)=>parseFloat(b.deuda)-parseFloat(a.deuda)).forEach(u=>{
+        const i    = DB.users.indexOf(u);
+        const m    = mesesDeuda(u);
+        const st   = estadoUsuario(u);
+        const mLabel = m > 0
+            ? `<strong style="color:${st==='moroso'?'var(--err)':'var(--warn)'}">${m} mes${m!==1?'es':''}</strong>`
+            : `<span style="color:var(--text3)">— (&lt;1 mes)</span>`;
+        const checked = SEL_DEU.has(String(u.dni)) ? 'checked' : '';
+        tb.innerHTML += `<tr>
+            <td><input type="checkbox" ${checked} onchange="toggleSel('${u.dni}',this.checked)"></td>
+            <td><strong>${u.apellido}, ${u.nombre}</strong></td>
+            <td>${u.dni||'—'}</td>
+            <td><span class="badge b-gray">${u.barrio}</span></td>
+            <td>${mLabel}</td>
+            <td style="font-weight:700;color:${st==='moroso'?'var(--err)':'var(--warn)'}">$${fmt(u.deuda)}</td>
+            <td>${badgeEstado(u)}</td>
+            <td>
+                <button class="btn btn-success btn-sm" onclick="irACobro('${u.dni}')">💰 Cobrar</button>
+                <button class="btn btn-ghost btn-sm" onclick="editUser(${i})">✏️</button>
+            </td></tr>`;
+    });
+    const s=document.getElementById('sel-count'); if(s) s.textContent='Seleccionados: '+SEL_DEU.size;
+}
+
+function imprimirCortes() {
+    const base = SEL_DEU.size ? DB.users.filter(u => SEL_DEU.has(String(u.dni))) : DB.users;
+    const list = base.filter(u => estadoUsuario(u) === 'moroso');
+    if (!list.length) return toast('No hay usuarios MOROSOS (2+ meses). Los que deben 1 mes solo reciben aviso.','info');
+    document.getElementById('print-area').innerHTML=list.map((u,i)=>`
+        <div class="corte${i<list.length-1?' pg-break':''}">
+            <h1>ORDEN DE CORTE DE SERVICIO</h1>
+            <p style="text-align:center;margin-bottom:6px;font-size:12px">${DB.config.empresa}</p>
+            ${DB.config.cuit ? `<p style="text-align:center;margin-bottom:18px;font-size:12px">CUIT: ${DB.config.cuit}</p>` : `<p style="margin-bottom:18px"></p>`}
+            <div class="c-row"><span><b>Fecha:</b></span><span>${new Date().toLocaleDateString('es-AR')}</span></div>
+            <div class="c-row"><span><b>Cliente:</b></span><span>${u.apellido}, ${u.nombre}</span></div>
+            <div class="c-row"><span><b>DNI:</b></span><span>${u.dni}</span></div>
+            <div class="c-row"><span><b>Domicilio:</b></span><span>${u.barrio} — Mz.${u.mz} Lt.${u.lote}</span></div>
+            <div class="c-row"><span><b>Tel:</b></span><span>${u.tel||'—'}</span></div>
+            <div class="c-row" style="font-size:15px;font-weight:bold;border-top:1px solid #333;padding-top:10px;margin-top:10px">
+                <span>DEUDA TOTAL:</span><span style="color:#b91c1c">$${fmt(u.deuda)}</span>
+            </div>
+            <p style="margin-top:18px">SE PROCEDE AL CORTE DEL SUMINISTRO POR FALTA DE PAGO.</p>
+            <div style="display:flex;gap:60px">
+                <div class="c-firma">Firma Operario</div>
+                <div class="c-firma">Firma Responsable</div>
+            </div>
+        </div>`).join('');
+    window.print();
+}
+
+function imprimirAvisos() {
+    const base = SEL_DEU.size ? DB.users.filter(u => SEL_DEU.has(String(u.dni))) : DB.users;
+    const list = base.filter(u => estadoUsuario(u) === 'debe');
+    if (!list.length) return toast('No hay usuarios con aviso (1 mes).','info');
+    document.getElementById('print-area').innerHTML=list.map((u,i)=>`
+        <div class="aviso${i<list.length-1?' pg-break':''}">
+            <h1>AVISO DE PAGO PENDIENTE</h1>
+            <p style="text-align:center;margin-bottom:6px;font-size:12px">${DB.config.empresa}</p>
+            ${DB.config.cuit ? `<p style="text-align:center;margin-bottom:18px;font-size:12px">CUIT: ${DB.config.cuit}</p>` : `<p style="margin-bottom:18px"></p>`}
+            <div class="c-row"><span><b>Fecha:</b></span><span>${new Date().toLocaleDateString('es-AR')}</span></div>
+            <div class="c-row"><span><b>Cliente:</b></span><span>${u.apellido}, ${u.nombre}</span></div>
+            <div class="c-row"><span><b>DNI:</b></span><span>${u.dni}</span></div>
+            <div class="c-row"><span><b>Domicilio:</b></span><span>${u.barrio} — Mz.${u.mz} Lt.${u.lote}</span></div>
+            <div class="c-row"><span><b>Tel:</b></span><span>${u.tel||'—'}</span></div>
+            <div class="c-row" style="font-size:15px;font-weight:bold;border-top:1px solid #333;padding-top:10px;margin-top:10px">
+                <span>DEUDA ACTUAL:</span><span style="color:#b45309">$${fmt(u.deuda)}</span>
+            </div>
+            <p style="margin-top:18px">Se notifica la existencia de deuda. Rogamos regularizar el pago a la brevedad para evitar el corte del servicio.</p>
+            <div style="display:flex;gap:60px">
+                <div class="c-firma">Firma Operario</div>
+                <div class="c-firma">Recibí Notificación</div>
+            </div>
+        </div>`).join('');
+    window.print();
+}
+
+function imprimirAvisosMorosos() {
+    const base = SEL_DEU.size ? DB.users.filter(u => SEL_DEU.has(String(u.dni))) : DB.users;
+    const list = base.filter(u => estadoUsuario(u) === 'moroso');
+    if (!list.length) return toast('No hay morosos (2+ meses) para notificar.','info');
+    const hoy  = new Date();
+    const venc = new Date(hoy.getTime()); venc.setDate(hoy.getDate()+2);
+    document.getElementById('print-area').innerHTML=list.map((u,i)=>`
+        <div class="aviso${i<list.length-1?' pg-break':''}">
+            <h1>NOTIFICACIÓN PREVIA A CORTE</h1>
+            <p style="text-align:center;margin-bottom:6px;font-size:12px">${DB.config.empresa}</p>
+            ${DB.config.cuit ? `<p style="text-align:center;margin-bottom:18px;font-size:12px">CUIT: ${DB.config.cuit}</p>` : `<p style="margin-bottom:18px"></p>`}
+            <div class="c-row"><span><b>Fecha:</b></span><span>${hoy.toLocaleDateString('es-AR')}</span></div>
+            <div class="c-row"><span><b>Vencimiento:</b></span><span>${venc.toLocaleDateString('es-AR')} (48 horas)</span></div>
+            <div class="c-row"><span><b>Cliente:</b></span><span>${u.apellido}, ${u.nombre}</span></div>
+            <div class="c-row"><span><b>DNI:</b></span><span>${u.dni}</span></div>
+            <div class="c-row"><span><b>Domicilio:</b></span><span>${u.barrio} — Mz.${u.mz} Lt.${u.lote}</span></div>
+            <div class="c-row"><span><b>Tel:</b></span><span>${u.tel||'—'}</span></div>
+            <div class="c-row" style="font-size:15px;font-weight:bold;border-top:1px solid #333;padding-top:10px;margin-top:10px">
+                <span>DEUDA TOTAL:</span><span style="color:#b91c1c">$${fmt(u.deuda)}</span>
+            </div>
+            <p style="margin-top:18px">Dispone de 48 horas para regularizar su deuda. Vencido el plazo, se procederá al CORTE del suministro sin más aviso.</p>
+            <div style="display:flex;gap:60px">
+                <div class="c-firma">Firma Operario</div>
+                <div class="c-firma">Recibí Notificación</div>
+            </div>
+        </div>`).join('');
+    window.print();
+}
+
+// ─── CONFIG ───────────────────────────────────────────────────
+function loadConfigForm() {
+    document.getElementById('cfg-empresa').value = DB.config.empresa||'';
+    document.getElementById('cfg-tel').value     = DB.config.tel||'';
+    document.getElementById('cfg-dir').value     = DB.config.dir||'';
+    const cuitEl = document.getElementById('cfg-cuit'); if (cuitEl) cuitEl.value = DB.config.cuit||'';
+    document.getElementById('cfg-precio').value  = DB.config.precio||1500;
+    const pEl = document.getElementById('cfg-prefijo');
+    const nEl = document.getElementById('cfg-next');
+    if (pEl) pEl.value = DB.config.reciboPrefijo||'0001';
+    if (nEl) nEl.value = DB.config.reciboNext||1;
+    const img = document.getElementById('cfg-logo-preview');
+    if (img) {
+        if (DB.config.logo) {
+            img.src = DB.config.logo;
+            img.style.display = 'inline-block';
+        } else {
+            img.src = '';
+            img.style.display = 'none';
+        }
+    }
+    // Historial de cargos
+    const hEl = document.getElementById('cargos-historial');
+    if (hEl) {
+        if (!DB.cargosGenerados || !DB.cargosGenerados.length) {
+            hEl.textContent = 'Sin cargos generados aún.';
+        } else {
+            hEl.innerHTML = [...DB.cargosGenerados].reverse().map(c=>
+                `<div style="border-bottom:1px solid var(--border);padding:4px 0">
+                    📅 <strong>${c.mes}</strong> — $${fmt(c.precio)} c/u — ${c.usuarios} usuarios afectados — ${c.fecha}
+                </div>`
+            ).join('');
+        }
+    }
+    renderAdminList();
+    renderCategoryList();
+}
+
+// ─── GENERAR CARGO MENSUAL ────────────────────────────────────
+const MESES_NOMBRE = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function abrirModalCargo() {
+    const now    = new Date();
+    const precio = parseFloat(DB.config.precio) || 1500;
+
+    // Llenar select con mes actual y los 3 anteriores
+    const sel = document.getElementById('cargo-mes-sel');
+    sel.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+        const d    = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key  = MESES_NOMBRE[d.getMonth()] + ' ' + d.getFullYear();
+        const opt  = document.createElement('option');
+        opt.value  = key;
+        opt.textContent = key + (i===0 ? ' (mes actual)' : '');
+        sel.appendChild(opt);
+    }
+
+    document.getElementById('cargo-precio-preview').textContent = '$' + fmt(precio);
+    document.getElementById('cargo-users-count').textContent    = DB.users.length;
+    document.getElementById('cargo-ya-existe').style.display    = 'none';
+
+    sel.onchange = () => verificarMesCargo(sel.value);
+    verificarMesCargo(sel.value);
+
+    document.getElementById('modal-cargo').classList.remove('hidden');
+}
+
+function verificarMesCargo(mes) {
+    const yaExiste = (DB.cargosGenerados||[]).some(c => c.mes === mes);
+    document.getElementById('cargo-ya-existe').style.display = yaExiste ? 'block' : 'none';
+}
+
+function confirmarCargo() {
+    const mes    = document.getElementById('cargo-mes-sel').value;
+    const precio = parseFloat(DB.config.precio) || 1500;
+
+    if (!confirm(`¿Generar cargo de $${fmt(precio)} para el mes de ${mes} a los ${DB.users.length} usuarios?\n\nEsto sumará esa cantidad a la deuda de cada usuario.`)) return;
+
+    DB.users.forEach(u => {
+        u.deuda = (parseFloat(u.deuda) || 0) + precio;
+    });
+
+    if (!DB.cargosGenerados) DB.cargosGenerados = [];
+    DB.cargosGenerados.push({
+        mes,
+        precio,
+        usuarios: DB.users.length,
+        fecha: new Date().toLocaleDateString('es-AR')
+    });
+
+    saveDB();
+    closeModal('modal-cargo');
+    loadConfigForm();
+
+    const morosos = DB.users.filter(u => estadoUsuario(u) === 'moroso').length;
+    toast(`Cargo de $${fmt(precio)} generado para ${mes}. Morosos ahora: ${morosos}`, 'ok');
+}
+function saveConfig() {
+    DB.config.empresa = document.getElementById('cfg-empresa').value.trim()||DB.config.empresa;
+    DB.config.tel     = document.getElementById('cfg-tel').value.trim();
+    DB.config.dir     = document.getElementById('cfg-dir').value.trim();
+    DB.config.cuit    = (document.getElementById('cfg-cuit').value||'').trim();
+    DB.config.precio  = parseFloat(document.getElementById('cfg-precio').value)||1500;
+    DB.config.reciboPrefijo = (document.getElementById('cfg-prefijo').value||'0001').trim()||'0001';
+    DB.config.reciboNext    = parseInt(document.getElementById('cfg-next').value,10)||DB.config.reciboNext||1;
+    saveDB(); toast('Configuración guardada');
+}
+function renderAdminList() {
+    const el=document.getElementById('admin-list'); if(!el) return;
+    if (!DB.admins||DB.admins.length===0) { el.textContent='Sin administradores.'; return; }
+    el.innerHTML = DB.admins.map(a =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);padding:6px 10px;border-radius:8px;margin:6px 0">
+            <div>👤 <strong>${a.user}</strong></div>
+            <div>
+                <button class="btn btn-ghost btn-sm" onclick="delAdmin('${a.user}')">Eliminar</button>
+            </div>
+        </div>`
+    ).join('');
+}
+function addAdmin() {
+    const u=(document.getElementById('adm-user').value||'').trim();
+    const p=document.getElementById('adm-pass').value;
+    if (!u||!p) return toast('Usuario y contraseña requeridos','err');
+    if ((DB.admins||[]).some(a=>a.user===u)) return toast('Usuario ya existe','err');
+    DB.admins.push({user:u,pass:p});
+    saveDB(); renderAdminList();
+    document.getElementById('adm-user').value='';
+    document.getElementById('adm-pass').value='';
+    toast('Administrador agregado');
+}
+function delAdmin(u) {
+    if (!confirm('¿Eliminar administrador?')) return;
+    if (!DB.admins||DB.admins.length<=1) return toast('Debe quedar al menos un administrador','err');
+    if (window.CURRENT_ADMIN && u===window.CURRENT_ADMIN) return toast('No puede eliminar su propio usuario','err');
+    DB.admins = DB.admins.filter(a=>a.user!==u);
+    saveDB(); renderAdminList(); toast('Administrador eliminado','info');
+}
+function cfgLogoChange(inp) {
+    const f=inp.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=e=>{
+        DB.config.logo=e.target.result;
+        saveDB();
+        const img=document.getElementById('cfg-logo-preview');
+        if (img) { img.src=DB.config.logo; img.style.display='inline-block'; }
+        toast('Logo guardado');
+    };
+    r.readAsDataURL(f);
+}
+function cfgLogoRemove() {
+    DB.config.logo='';
+    saveDB();
+    const img=document.getElementById('cfg-logo-preview');
+    if (img) { img.src=''; img.style.display='none'; }
+    toast('Logo eliminado','info');
+}
+function changePass() {
+    const p1=document.getElementById('cfg-pass1').value;
+    const p2=document.getElementById('cfg-pass2').value;
+    if (!p1) return toast('Ingrese una contraseña','err');
+    if (p1!==p2) return toast('Las contraseñas no coinciden','err');
+    if (p1.length<4) return toast('Mínimo 4 caracteres','err');
+    const u = window.CURRENT_ADMIN;
+    if (!u) return toast('Debe iniciar sesión','err');
+    const idx = (DB.admins||[]).findIndex(a=>a.user===u);
+    if (idx<0) return toast('Usuario no encontrado','err');
+    DB.admins[idx].pass = p1; saveDB();
+    document.getElementById('cfg-pass1').value='';
+    document.getElementById('cfg-pass2').value='';
+    toast('Contraseña actualizada');
+}
+
+// ─── BACKUP / RESTORE / EXPORT ────────────────────────────────
+function doBackup() {
+    const b=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+    const u=URL.createObjectURL(b);
+    const a=document.createElement('a');
+    a.href=u; a.download='Backup_HidroGestion_'+new Date().toISOString().slice(0,10)+'.json';
+    a.click(); URL.revokeObjectURL(u);
+    toast('Copia de seguridad descargada');
+}
+function doRestore(inp) {
+    const f=inp.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=e=>{ try{
+        const d=JSON.parse(e.target.result);
+        if(!d.users||!d.payments) throw new Error();
+        DB=d; saveDB(); toast('Base restaurada. Recargando...','info');
+        setTimeout(()=>location.reload(),1500);
+    } catch(err){ toast('Archivo inválido o corrupto','err'); } };
+    r.readAsText(f); inp.value='';
+}
+function doExport() {
+    const bom='\uFEFF';
+    const rows=[['DNI','Apellido','Nombre','Teléfono','Barrio','Manzana','Lote','Categoría','Deuda']];
+    DB.users.forEach(u=>rows.push([u.dni,u.apellido,u.nombre,u.tel||'',u.barrio,u.mz,u.lote,u.cat,u.deuda]));
+    const csv=bom+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const u=URL.createObjectURL(b);
+    const a=document.createElement('a');
+    a.href=u; a.download='Padron_'+new Date().toISOString().slice(0,10)+'.csv';
+    a.click(); URL.revokeObjectURL(u);
+    toast('CSV exportado');
+}
+function resetSystem() {
+    if (!confirm('¿BORRAR TODOS LOS DATOS? Esta acción es irreversible.')) return;
+    if (!confirm('CONFIRMACIÓN FINAL: Se eliminará todo. ¿Continuar?')) return;
+    localStorage.removeItem(DB_KEY); location.reload();
+}
+</script>
+<script>
+// Service Worker registration for PWA offline functionality
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then((registration) => {
+        console.log('Service Worker registered with scope:', registration.scope);
+      })
+      .catch((error) => {
+        console.log('Service Worker registration failed:', error);
+      });
+  });
+}
+</script>
+</body>
+</html>
