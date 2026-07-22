@@ -651,12 +651,12 @@ tbody tr:hover{background:var(--bg)}
             <div class="card">
                 <div class="toolbar">
                     <div class="search-wrap" style="flex:1">
-                        <input type="text" id="deu-search" class="fc" placeholder="Buscar moroso..." oninput="currentDeuPage=1;renderDeudores()">
+                        <input type="text" id="deu-search" class="fc" placeholder="Buscar moroso..." oninput="renderDeudores()">
                     </div>
-                    <select id="deu-barrio" class="fc" onchange="currentDeuPage=1;renderDeudores()" style="max-width:170px">
+                    <select id="deu-barrio" class="fc" onchange="renderDeudores()" style="max-width:170px">
                         <option value="">Todos los Barrios</option>
                     </select>
-                    <select id="deu-filtro-estado" class="fc" onchange="currentDeuPage=1;renderDeudores()" style="max-width:180px">
+                    <select id="deu-filtro-estado" class="fc" onchange="renderDeudores()" style="max-width:180px">
                         <option value="moroso">🔴 Solo MOROSOS (2+ mes)</option>
                         <option value="todos">Todos con deuda</option>
                     </select>
@@ -669,22 +669,6 @@ tbody tr:hover{background:var(--bg)}
                         <thead><tr><th>Sel</th><th>Cliente</th><th>DNI</th><th>Barrio</th><th>Meses adeudados</th><th>Deuda $</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody id="tbl-deudores"></tbody>
                     </table>
-                </div>
-                <div id="deu-pagination" style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:10px">
-                    <div>
-                        <label style="margin-right:8px">Mostrar:</label>
-                        <select id="deu-per-page" class="fc" style="width:80px;display:inline-block" onchange="changeDeuPerPage()">
-                            <option value="10">10</option>
-                            <option value="25" selected>25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                    </div>
-                    <div>
-                        <button class="btn btn-ghost btn-sm" id="deu-prev" onclick="prevDeuPage()">◀ Anterior</button>
-                        <span id="deu-page-info" style="margin:0 12px;font-weight:600"></span>
-                        <button class="btn btn-ghost btn-sm" id="deu-next" onclick="nextDeuPage()">Siguiente ▶</button>
-                    </div>
                 </div>
                 <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;align-items:center">
                     <div id="sel-count" style="font-size:12px;color:var(--text2)">Seleccionados: 0</div>
@@ -1113,9 +1097,6 @@ let DB = {
 let currentPage = 1;
 let itemsPerPage = 25;
 let filteredUsers = [];
-let currentDeuPage = 1;
-let deuPerPage = 25;
-let filteredDeudores = [];
 
 // Debounce timer for search
 let searchDebounceTimer = null;
@@ -2101,33 +2082,18 @@ function renderDeudores() {
     document.getElementById('deu-aviso-monto').textContent    = '$'+fmt(avisoAll.reduce((a,u)=>a+parseFloat(u.deuda||0),0));
 
     // Filtrar lista visible
-    filteredDeudores = DB.users.filter(u => {
+    const list = DB.users.filter(u => {
         if (filtSt === 'moroso' && estadoUsuario(u) !== 'moroso') return false;
         if (filtSt === 'todos'  && parseFloat(u.deuda||0) <= 0)   return false;
         if (filtB && u.barrio !== filtB) return false;
         const txt = `${u.nombre} ${u.apellido} ${u.dni} ${u.barrio}`.toLowerCase();
         return txt.includes(term);
-    }).sort((a,b)=>parseFloat(b.deuda)-parseFloat(a.deuda));
+    });
 
-    if (!filteredDeudores.length) {
-        tb.innerHTML = '';
-        em.classList.remove('hidden');
-        document.getElementById('deu-pagination').style.display = 'none';
-        return;
-    }
+    if (!list.length) { tb.innerHTML=''; em.classList.remove('hidden'); return; }
     em.classList.add('hidden');
-    document.getElementById('deu-pagination').style.display = 'flex';
     tb.innerHTML = '';
-
-    const totalPages = Math.ceil(filteredDeudores.length / deuPerPage);
-    if (currentDeuPage > totalPages && totalPages > 0) currentDeuPage = totalPages;
-    if (currentDeuPage < 1) currentDeuPage = 1;
-
-    const startIdx = (currentDeuPage - 1) * deuPerPage;
-    const endIdx = startIdx + deuPerPage;
-    const pageItems = filteredDeudores.slice(startIdx, endIdx);
-
-    pageItems.forEach(u=>{
+    [...list].sort((a,b)=>parseFloat(b.deuda)-parseFloat(a.deuda)).forEach(u=>{
         const i    = DB.users.indexOf(u);
         const m    = mesesDeuda(u);
         const st   = estadoUsuario(u);
@@ -2148,32 +2114,7 @@ function renderDeudores() {
                 <button class="btn btn-ghost btn-sm" onclick="editUser(${i})">✏️</button>
             </td></tr>`;
     });
-
-    document.getElementById('deu-page-info').textContent = `Página ${currentDeuPage} de ${totalPages} (${filteredDeudores.length} usuarios)`;
-    document.getElementById('deu-prev').disabled = currentDeuPage <= 1;
-    document.getElementById('deu-next').disabled = currentDeuPage >= totalPages;
     const s=document.getElementById('sel-count'); if(s) s.textContent='Seleccionados: '+SEL_DEU.size;
-}
-
-function changeDeuPerPage() {
-    deuPerPage = parseInt(document.getElementById('deu-per-page').value, 10);
-    currentDeuPage = 1;
-    renderDeudores();
-}
-
-function prevDeuPage() {
-    if (currentDeuPage > 1) {
-        currentDeuPage--;
-        renderDeudores();
-    }
-}
-
-function nextDeuPage() {
-    const totalPages = Math.ceil(filteredDeudores.length / deuPerPage);
-    if (currentDeuPage < totalPages) {
-        currentDeuPage++;
-        renderDeudores();
-    }
 }
 
 function imprimirCortes() {
