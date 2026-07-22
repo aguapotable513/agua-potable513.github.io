@@ -5,8 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AGUA POTABLE SAN ANTONIO — Sistema Integral</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0ea5e9">
-<meta name="description" content="Sistema de gestión de agua potable para administración de usuarios y cobros">
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="description" content="Sistema de gestión de agua potable para administración de usuarios y cobros">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 /* ============================================================
    VARIABLES & RESET
@@ -816,6 +819,50 @@ tbody tr:hover{background:var(--bg)}
                 <button class="btn btn-primary" onclick="openCategoryModal()">➕ Agregar Categoría</button>
             </div>
 
+            <div class="cfg-block">
+                <h4>🔒 Firebase Cloud Database</h4>
+                <p style="font-size:13px;color:var(--text3);margin-bottom:14px">
+                    Configura Firebase para almacenar tus datos en la nube y no perderlos nunca.<br>
+                    Obten tu configuración desde <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer">Firebase Console</a>.
+                </p>
+                <div class="frow">
+                    <div class="fg">
+                        <label class="fl">API Key</label>
+                        <input type="text" id="fb-apiKey" class="fc" placeholder="AIzaSy...">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Auth Domain</label>
+                        <input type="text" id="fb-authDomain" class="fc" placeholder="tu-app.firebaseapp.com">
+                    </div>
+                </div>
+                <div class="frow">
+                    <div class="fg">
+                        <label class="fl">Project ID</label>
+                        <input type="text" id="fb-projectId" class="fc" placeholder="tu-app-12345">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Storage Bucket</label>
+                        <input type="text" id="fb-storageBucket" class="fc" placeholder="tu-app.appspot.com">
+                    </div>
+                </div>
+                <div class="frow">
+                    <div class="fg">
+                        <label class="fl">Messaging Sender ID</label>
+                        <input type="text" id="fb-messagingSenderId" class="fc" placeholder="123456789012">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">App ID</label>
+                        <input type="text" id="fb-appId" class="fc" placeholder="1:123456789012:web:abcdef...">
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:10px">
+                    <button class="btn btn-primary" onclick="initializeFirebase()">🔗 Conectar Firebase</button>
+                    <button class="btn btn-success" onclick="backupToFirebase()">☁️ Subir Datos a la Nube</button>
+                    <button class="btn btn-warning" onclick="restoreFromFirebase()">⬇️ Descargar Datos de la Nube</button>
+                </div>
+                <div id="fb-status" style="margin-top:10px;font-size:12px;color:var(--text3);"></div>
+            </div>
+
             <div class="cfg-block cfg-danger">
                 <h4>⛔ Zona de Peligro</h4>
                 <p style="font-size:13px;color:var(--err);margin-bottom:14px">Elimina <strong>todos los datos</strong> de forma permanente e irreversible.</p>
@@ -1017,6 +1064,7 @@ const DEFAULT_CATEGORIES = [
     { id: 11, name: 'Derecho de Conexión', price: 50000 },
     { id: 12, name: 'Opción Servicio Medido por cada 10 m3', price: 15000 }
 ];
+let firestore = null;
 let DB = {
     users: [],
     payments: [],
@@ -1033,7 +1081,15 @@ let DB = {
         reciboPrefijo:'0001', 
         reciboNext:1, 
         logo:'',
-        categories: DEFAULT_CATEGORIES
+        categories: DEFAULT_CATEGORIES,
+        firebaseConfig: {
+            apiKey: "",
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
+        }
     }
 };
 
@@ -1068,13 +1124,31 @@ window.onload = () => {
     if (!DB.config.categories || !Array.isArray(DB.config.categories) || DB.config.categories.length===0) {
         DB.config.categories = DEFAULT_CATEGORIES;
     }
+    // Auto-initialize Firebase if config exists
+    if (DB.config.firebaseConfig && DB.config.firebaseConfig.apiKey && DB.config.firebaseConfig.projectId) {
+        try {
+            if (window.firebase && !firebase.apps.length) {
+                firebase.initializeApp(DB.config.firebaseConfig);
+            }
+            firestore = firebase.firestore();
+        } catch (e) {
+            console.error('Error initializing Firebase on load:', e);
+        }
+    }
     updateDash();
     loadConfigForm();
     buildMeses();
     clock();
 };
 
-function saveDB() { localStorage.setItem(DB_KEY, JSON.stringify(DB)); updateDash(); }
+function saveDB() {
+    localStorage.setItem(DB_KEY, JSON.stringify(DB));
+    updateDash();
+    // Auto-backup to Firestore if connected
+    if (firestore) {
+        backupToFirebase().catch(e => console.error('Error auto-backing up to Firebase:', e));
+    }
+}
 
 // ─── RELOJ ────────────────────────────────────────────────────
 function clock() {
@@ -2145,6 +2219,15 @@ function loadConfigForm() {
             img.style.display = 'none';
         }
     }
+    // Load Firebase config
+    if (DB.config.firebaseConfig) {
+        document.getElementById('fb-apiKey').value = DB.config.firebaseConfig.apiKey || '';
+        document.getElementById('fb-authDomain').value = DB.config.firebaseConfig.authDomain || '';
+        document.getElementById('fb-projectId').value = DB.config.firebaseConfig.projectId || '';
+        document.getElementById('fb-storageBucket').value = DB.config.firebaseConfig.storageBucket || '';
+        document.getElementById('fb-messagingSenderId').value = DB.config.firebaseConfig.messagingSenderId || '';
+        document.getElementById('fb-appId').value = DB.config.firebaseConfig.appId || '';
+    }
     // Historial de cargos
     const hEl = document.getElementById('cargos-historial');
     if (hEl) {
@@ -2161,6 +2244,99 @@ function loadConfigForm() {
     renderAdminList();
     renderCategoryList();
 }
+
+// ─── FIREBASE CLOUD DATABASE ──────────────────────────────────
+function setFirebaseStatus(msg, isError = false) {
+    const statusEl = document.getElementById('fb-status');
+    if (statusEl) {
+        statusEl.style.color = isError ? 'var(--err)' : 'var(--ok)';
+        statusEl.textContent = msg;
+    }
+}
+
+function initializeFirebase() {
+    // First, save any changes to the config inputs
+    saveConfig();
+    const fbConfig = DB.config.firebaseConfig;
+    if (!fbConfig || !fbConfig.apiKey || !fbConfig.projectId) {
+        setFirebaseStatus('Por favor, completa todos los campos de Firebase primero.', true);
+        toast('Configura Firebase primero', 'err');
+        return;
+    }
+    try {
+        if (window.firebase && !firebase.apps.length) {
+            firebase.initializeApp(fbConfig);
+        } else if (window.firebase && firebase.apps.length) {
+            // Already initialized, use existing
+        }
+        firestore = firebase.firestore();
+        setFirebaseStatus('✅ Conectado a Firebase Firestore');
+        toast('Conectado a Firebase!', 'ok');
+    } catch (e) {
+        console.error(e);
+        setFirebaseStatus(`Error conectando a Firebase: ${e.message}`, true);
+        toast('Error conectando a Firebase', 'err');
+    }
+}
+
+async function backupToFirebase() {
+    if (!firestore) {
+        setFirebaseStatus('Primero conecta a Firebase', true);
+        toast('Primero conecta a Firebase', 'err');
+        return;
+    }
+    try {
+        setFirebaseStatus('Subiendo datos a la nube...');
+        const docRef = firestore.collection('system_backup').doc('current_data');
+        await docRef.set({
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            data: JSON.parse(JSON.stringify(DB)) // deep copy to avoid issues
+        });
+        setFirebaseStatus('✅ Datos subidos a la nube exitosamente!');
+        toast('Datos guardados en la nube', 'ok');
+    } catch (e) {
+        console.error(e);
+        setFirebaseStatus(`Error al subir datos: ${e.message}`, true);
+        toast('Error al subir datos', 'err');
+    }
+}
+
+async function restoreFromFirebase() {
+    if (!firestore) {
+        setFirebaseStatus('Primero conecta a Firebase', true);
+        toast('Primero conecta a Firebase', 'err');
+        return;
+    }
+    if (!confirm('¿Quieres reemplazar tus datos actuales con los de la nube?')) return;
+    try {
+        setFirebaseStatus('Descargando datos de la nube...');
+        const docRef = firestore.collection('system_backup').doc('current_data');
+        const doc = await docRef.get();
+        if (!doc.exists) {
+            setFirebaseStatus('No hay datos guardados en la nube', true);
+            toast('No hay datos en la nube', 'err');
+            return;
+        }
+        const cloudData = doc.data().data;
+        if (cloudData) {
+            DB = cloudData;
+            saveDB();
+            // Refresh UI
+            renderUsers();
+            updateDash();
+            renderConfigForm(); // wait, renderConfigForm is loadConfigForm!
+            loadConfigForm();
+            resetCobroUI();
+            setFirebaseStatus('✅ Datos restaurados exitosamente!');
+            toast('Datos restaurados de la nube', 'ok');
+        }
+    } catch (e) {
+        console.error(e);
+        setFirebaseStatus(`Error al descargar datos: ${e.message}`, true);
+        toast('Error al descargar datos', 'err');
+    }
+}
+
 
 // ─── GENERAR CARGO MENSUAL ────────────────────────────────────
 const MESES_NOMBRE = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -2230,6 +2406,15 @@ function saveConfig() {
     DB.config.precio  = parseFloat(document.getElementById('cfg-precio').value)||1500;
     DB.config.reciboPrefijo = (document.getElementById('cfg-prefijo').value||'0001').trim()||'0001';
     DB.config.reciboNext    = parseInt(document.getElementById('cfg-next').value,10)||DB.config.reciboNext||1;
+    // Save Firebase config
+    DB.config.firebaseConfig = {
+        apiKey: document.getElementById('fb-apiKey').value.trim(),
+        authDomain: document.getElementById('fb-authDomain').value.trim(),
+        projectId: document.getElementById('fb-projectId').value.trim(),
+        storageBucket: document.getElementById('fb-storageBucket').value.trim(),
+        messagingSenderId: document.getElementById('fb-messagingSenderId').value.trim(),
+        appId: document.getElementById('fb-appId').value.trim()
+    };
     saveDB(); toast('Configuración guardada');
 }
 function renderAdminList() {
