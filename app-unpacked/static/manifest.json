@@ -1,0 +1,16 @@
+{
+  "name": "AGUA POTABLE SAN ANTONIO",
+  "short_name": "Agua San Antonio",
+  "description": "Sistema de gestión de agua potable AGUA POTABLE SAN ANTONIO",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "https://coresg-normal.trae.ai/api/v1/text_to_image?prompt=water%20drop%20logo%20blue%20flat%20design&image_size=square",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

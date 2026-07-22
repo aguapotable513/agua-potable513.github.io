@@ -1,0 +1,35 @@
+{
+  "name": "agua-potable-san-antonio",
+  "version": "6.0.0",
+  "description": "AGUA POTABLE SAN ANTONIO - Sistema de gestión de agua potable",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^latest",
+    "electron-builder": "^latest"
+  },
+  "build": {
+    "appId": "com.aguapotablesanantonio.app",
+    "productName": "AGUA POTABLE SAN ANTONIO",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/app.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
